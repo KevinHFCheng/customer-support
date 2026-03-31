@@ -1,5 +1,5 @@
 // --- 請填入您的 GAS 部署網址 ---
-const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbycsJo0HtCFxiwqMt4vVkQOAW__xteP-3-TpArohjQSERQZWMDSxARSxdjYav2JLyu9/exec';
+const GAS_WEB_APP_URL = 'https://script.google.com/macros/library/d/1Om01zBPBx0s27jLPFHHAHJIrSVmWTDya9z6HsG9qGPLZ5e3elVlYpRn8/5';
 
 const regForm = document.getElementById('registrationForm');
 const chatToggle = document.getElementById('chat-toggle-btn');
