@@ -30,18 +30,24 @@ regForm.addEventListener('submit', async (e) => {
     try {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain;charset=utf-8', // 避免觸發 CORS Preflight
+            },
             body: JSON.stringify(formData)
         });
+
         const result = await response.json();
+
         if (result.result === 'success') {
             alert(`提交成功！您的報告編號為：${result.id}`);
             regForm.reset();
         } else {
-            alert('提交失敗，請檢查網路連線。');
+            // 這裡改為顯示 GAS 傳回的錯誤訊息
+            alert('提交失敗：' + (result.message || '原因不明'));
         }
     } catch (err) {
         console.error(err);
-        alert('發生錯誤，請稍後再試。');
+        alert('發生錯誤：' + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = '提交需求';
