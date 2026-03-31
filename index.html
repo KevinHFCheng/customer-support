@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>客戶需求與問題登記系統 | OtO Photonics</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 導覽列 (比照官網) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="https://www.otophotonics.com/" target="_blank">
+                <img src="https://www.otophotonics.com/images/project/551/logo2.png" alt="OtO Photonics Logo" class="logo-img">
+            </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 頂部標題 -->
+        <header>
+            <h1>客戶需求與問題登記</h1>
+            <p>請填寫以下資訊，我們將儘速為您處理</p>
+        </header>
+
+        <!-- 表單區域 -->
+        <main class="glass-panel">
+            <form id="registrationForm">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="companyName">公司名稱</label>
+                        <input type="text" id="companyName" name="companyName" required placeholder="請輸入您的公司名稱">
+                    </div>
+                    <div class="form-group">
+                        <label for="clientContact">客戶窗口</label>
+                        <input type="text" id="clientContact" name="clientContact" required placeholder="聯絡人姓名">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">聯繫郵件</label>
+                        <input type="email" id="email" name="email" required placeholder="example@mail.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="snsAccount">Line / Wechat / WhatsApp</label>
+                        <input type="text" id="snsAccount" name="snsAccount" placeholder="社群軟體帳號">
+                    </div>
+                    <div class="form-group">
+                        <label for="productModel">產品型號</label>
+                        <input type="text" id="productModel" name="productModel" required placeholder="EX : SE2030-050-VNIR">
+                    </div>
+                    <div class="form-group">
+                        <label for="serialNumber">產品序號 (S/N)</label>
+                        <input type="text" id="serialNumber" name="serialNumber" placeholder="請輸入序號後五碼">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="reqType">需求類型</label>
+                        <select id="reqType" name="reqType" required>
+                            <option value="" disabled selected>請選擇類型</option>
+                            <option value="產品規格與選型">產品規格與選型</option>
+                            <option value="技術諮詢">技術諮詢</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="description">問題描述</label>
+                        <textarea id="description" name="description" rows="4" required placeholder="請詳細描述您的需求或遇到的問題..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="imgUrl">圖片/截圖網址</label>
+                        <input type="text" id="imgUrl" name="imgUrl" placeholder="請貼上圖片連結或 Google Drive 分享連結">
+                    </div>
+                </div>
+                <button type="submit" id="submitBtn" class="primary-btn">提交需求</button>
+            </form>
+        </main>
+    </div>
+
+    <!-- AI 智能客服小組件 -->
+    <div id="ai-chat-widget" class="chat-closed">
+        <div id="chat-header">
+            <span>AI 智能客服</span>
+            <button id="close-chat">×</button>
+        </div>
+        <div id="chat-body">
+            <div class="message bot">您好！我是您的智能助手。有任何關於技術規格或 FAQ 的問題都可以問我喔！</div>
+        </div>
+        <div id="chat-footer">
+            <input type="text" id="chat-input" placeholder="請輸入問題...">
+            <button id="send-chat">傳送</button>
+        </div>
+    </div>
+    <button id="chat-toggle-btn">💬</button>
+
+    <div id="loading" class="hidden">提交中...</div>
+    <script src="script.js"></script>
+</body>
+</html>

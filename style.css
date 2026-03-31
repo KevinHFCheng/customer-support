@@ -1,0 +1,106 @@
+:root {
+    --primary: #216BA5; /* OtO 品牌藍 */
+    --secondary: #004098; /* 標誌深藍 */
+    --accent: #E60012; /* 標誌紅 */
+    --bg-dark: #001529; /* 深色科技底色 */
+    --bg-gradient: linear-gradient(145deg, #001529 0%, #003366 100%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --text-color: #333333;
+    --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: 'Barlow', 'Noto Sans TC', sans-serif;
+    background: var(--bg-gradient);
+    color: var(--text-color);
+    min-height: 100vh;
+    padding-top: 80px; /* 為導覽列留空間 */
+}
+
+/* 導覽列樣式 (比照官網) */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 70px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+}
+.nav-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.logo-img {
+    height: 45px;
+    display: block;
+}
+
+.container { 
+    width: 100%; 
+    max-width: 900px; 
+    margin: 40px auto;
+    animation: fadeIn 0.8s ease;
+    padding: 0 20px 40px;
+}
+
+header { text-align: center; margin-bottom: 30px; }
+header h1 { font-size: 2.2rem; margin-bottom: 10px; color: #ffffff; font-weight: 700; }
+header p { color: #a5b1c2; }
+
+.glass-panel {
+    background: var(--glass-bg);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: var(--shadow);
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-group { display: flex; flex-direction: column; }
+.full-width { grid-column: span 2; }
+
+label { font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+input, select, textarea {
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
+
+.primary-btn {
+    margin-top: 30px;
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+/* AI Chat Widget Style...*/
+#chat-toggle-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; }
+#ai-chat-widget { position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 15px; box-shadow: var(--shadow); display: none; flex-direction: column; overflow: hidden; z-index: 1000; }
+#chat-header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; font-weight: 600; }
+#chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
+.message.bot { background: #f0f2f5; align-self: flex-start; }
+.message.user { background: var(--primary); color: white; align-self: flex-end; }
+#chat-footer { padding: 10px; display: flex; gap: 8px; border-top: 1px solid #eee; }
+#chat-input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; }
+
+.hidden { display: none; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
