@@ -45,38 +45,79 @@ body {
     align-items: center;
 }
 
-/* 語系切換器：改為 OtO 官網風格 (垂直排列獨立按鈕) */
-.lang-switcher {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    z-index: 100;
+/* 語系下拉選單：比照 OtO 官網互動性 */
+.lang-dropdown {
+    position: relative;
+    z-index: 1000;
 }
 
+/* 地球儀按鈕 */
+.globe-btn {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.globe-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 1;
+}
+
+/* 隱藏式選單容器 */
+.lang-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+    display: none; /* 預設隱藏 */
+    flex-direction: column;
+    gap: 0;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    min-width: 140px;
+    background: transparent;
+}
+
+.lang-menu.show {
+    display: flex;
+    animation: slideDown 0.3s ease forwards;
+}
+
+/* 官網風格斜角按鈕 (下拉選單內的選項) */
 .oto-lang-btn {
     background-color: rgba(255, 255, 255, 0.95);
-    color: #666666 !important;
-    padding: 6px 14px;
-    font-size: 13px;
+    color: #444 !important;
+    padding: 12px 18px;
+    font-size: 14px;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
     
-    /* 精確重現官網左上與右下斜角效果 */
-    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    /* 斜角效果 */
+    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
     
     cursor: pointer;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    min-width: 50px;
+    text-align: left;
 }
 
 .oto-lang-btn:hover, 
 .oto-lang-btn.active {
     background-color: #ffffff;
-    color: #333333 !important;
-    transform: translateX(-3px); /* 滑過時輕微左移，增加互動感 */
+    color: #000 !important;
+    padding-left: 22px; /* 滑過時文字向右微移，符合互動趨勢 */
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* 圖片預覽網格樣式 */

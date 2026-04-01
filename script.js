@@ -135,6 +135,23 @@ const chatInput = document.getElementById('chat-input');
 const sendChat = document.getElementById('send-chat');
 const chatBody = document.getElementById('chat-body');
 const imagePreview = document.getElementById('image-preview');
+const langToggle = document.getElementById('lang-toggle');
+const langMenu = document.getElementById('lang-menu');
+
+/**
+ * 語系下拉選單切換邏輯
+ */
+langToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    langMenu.classList.toggle('show');
+});
+
+// 點擊頁面其他地方時關閉語系選單
+window.addEventListener('click', () => {
+    if (langMenu.classList.contains('show')) {
+        langMenu.classList.remove('show');
+    }
+});
 
 /**
  * 處理檔案選取與預覽
