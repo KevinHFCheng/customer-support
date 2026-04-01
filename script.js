@@ -1,5 +1,5 @@
 /**
- * 設定 Google Apps Script (GAS) 的部署網址
+ * 設定 Google Apps Script (GAS) 的部署網址 (v1.1 - 支援檔案上傳功能)
  * 該網址用於接收表單數據並處理 AI 聊天請求
  */
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
@@ -18,7 +18,7 @@ const chatBody = document.getElementById('chat-body');
  */
 regForm.addEventListener('submit', async (e) => {
     e.preventDefault(); // 阻止表單預設提交行為
-    
+
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true; // 提交期間禁用按鈕，防止重複提交
     submitBtn.innerText = '提交中...';
@@ -58,7 +58,7 @@ regForm.addEventListener('submit', async (e) => {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8', 
+                'Content-Type': 'text/plain;charset=utf-8',
             },
             body: JSON.stringify(formData)
         });
@@ -123,7 +123,7 @@ function addMessage(text, sender) {
     msgDiv.className = `message ${sender}`;
     msgDiv.innerText = text;
     chatBody.appendChild(msgDiv);
-    
+
     // 自動滾動到最底部以查看最新訊息
     chatBody.scrollTop = chatBody.scrollHeight;
 }
