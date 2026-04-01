@@ -77,10 +77,11 @@
                         <label for="description">問題描述</label>
                         <textarea id="description" name="description" rows="4" required placeholder="請詳細描述您的需求或遇到的問題..."></textarea>
                     </div>
-                    <!-- 附件或截圖連結 -->
+                    <!-- 附件或截圖上傳 -->
                     <div class="form-group full-width">
-                        <label for="imgUrl">圖片/截圖網址</label>
-                        <input type="text" id="imgUrl" name="imgUrl" placeholder="請貼上圖片連結或 Google Drive 分享連結">
+                        <label for="imageFile">圖片/截圖上傳 (支援 JPG/PNG)</label>
+                        <input type="file" id="imageFile" name="imageFile" accept="image/*" class="file-input">
+                        <small style="color: #666; margin-top: 5px;">檔案將自動上傳至 Google 雲端硬碟</small>
                     </div>
                 </div>
                 <!-- 提交按鈕 -->

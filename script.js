@@ -23,6 +23,22 @@ regForm.addEventListener('submit', async (e) => {
     submitBtn.disabled = true; // 提交期間禁用按鈕，防止重複提交
     submitBtn.innerText = '提交中...';
 
+    // 獲取檔案
+    const fileInput = regForm.imageFile;
+    let fileData = null;
+    let fileName = "";
+
+    // 如果有選取檔案，則讀取為 Base64
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        fileName = file.name;
+        fileData = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
     // 彙整表單數據
     const formData = {
         companyName: regForm.companyName.value,
@@ -33,7 +49,8 @@ regForm.addEventListener('submit', async (e) => {
         serialNumber: regForm.serialNumber.value,
         reqType: regForm.reqType.value,
         description: regForm.description.value,
-        imgUrl: regForm.imgUrl.value
+        fileData: fileData, // 圖片 Base64 數據
+        fileName: fileName  // 圖片檔名
     };
 
     try {
@@ -41,7 +58,7 @@ regForm.addEventListener('submit', async (e) => {
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8', // 使用 text/plain 以避免 CORS Preflight 預檢請求限制
+                'Content-Type': 'text/plain;charset=utf-8', 
             },
             body: JSON.stringify(formData)
         });
@@ -52,14 +69,13 @@ regForm.addEventListener('submit', async (e) => {
             alert(`提交成功！您的報告編號為：${result.id}`);
             regForm.reset(); // 提交成功後清空表單
         } else {
-            // 顯示來自 GAS 的具體錯誤訊息
             alert('提交失敗：' + (result.message || '原因不明'));
         }
     } catch (err) {
         console.error('Submission Error:', err);
         alert('發生系統錯誤：' + err.message);
     } finally {
-        submitBtn.disabled = false; // 恢復按鈕狀態
+        submitBtn.disabled = false;
         submitBtn.innerText = '提交需求';
     }
 });
