@@ -121,10 +121,11 @@ function setLanguage(lang) {
         if (i18n[lang][key]) el.setAttribute('placeholder', i18n[lang][key]);
     });
 
-    // 更新切換按鈕狀態
-    document.getElementById('lang-zh-tw').classList.toggle('active', lang === 'zh-TW');
-    document.getElementById('lang-zh-cn').classList.toggle('active', lang === 'zh-CN');
-    document.getElementById('lang-en').classList.toggle('active', lang === 'en');
+    // 更新切換按鈕狀態 (配合 OtO 官網風格按鈕)
+    document.querySelectorAll('.oto-lang-btn').forEach(btn => btn.classList.remove('active'));
+    if (lang === 'zh-TW') document.getElementById('lang-zh-tw').classList.add('active');
+    if (lang === 'zh-CN') document.getElementById('lang-zh-cn').classList.add('active');
+    if (lang === 'en') document.getElementById('lang-en').classList.add('active');
 }
 
 // 獲取 DOM 元素

@@ -45,38 +45,38 @@ body {
     align-items: center;
 }
 
-/* 語系切換器樣式 - 強化可見度 */
+/* 語系切換器：改為 OtO 官網風格 (垂直排列獨立按鈕) */
 .lang-switcher {
     display: flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 4px 8px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    z-index: 100;
 }
 
-.lang-switcher button {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-    cursor: pointer;
-    padding: 2px 10px;
-    transition: all 0.2s ease;
+.oto-lang-btn {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #666666 !important;
+    padding: 6px 14px;
+    font-size: 13px;
+    text-decoration: none;
     font-weight: 500;
-    font-size: 0.85rem;
+    transition: all 0.3s ease;
+    
+    /* 精確重現官網左上與右下斜角效果 */
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
+    
+    cursor: pointer;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    min-width: 50px;
 }
 
-.lang-switcher button:hover, 
-.lang-switcher button.active {
-    color: #ffd700; /* 使用金黃色突顯當前語系 */
-    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-}
-
-.lang-switcher .divider {
-    color: rgba(255, 255, 255, 0.2);
-    font-size: 0.8rem;
+.oto-lang-btn:hover, 
+.oto-lang-btn.active {
+    background-color: #ffffff;
+    color: #333333 !important;
+    transform: translateX(-3px); /* 滑過時輕微左移，增加互動感 */
 }
 
 /* 圖片預覽網格樣式 */
