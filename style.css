@@ -71,48 +71,49 @@ body {
     opacity: 1;
 }
 
-/* 隱藏式選單容器 */
+/* 隱藏式選單容器 - 改為水平排列 */
 .lang-menu {
     position: absolute;
     top: 100%;
     right: 0;
     margin-top: 10px;
     display: none; /* 預設隱藏 */
-    flex-direction: column;
-    gap: 0;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    min-width: 140px;
+    flex-direction: row; /* 水平排列 */
+    gap: 10px;
+    box-shadow: none; /* 移除陰影以配合水平設計 */
     background: transparent;
+    padding: 5px;
 }
 
 .lang-menu.show {
     display: flex;
-    animation: slideDown 0.3s ease forwards;
+    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* 官網風格斜角按鈕 (下拉選單內的選項) */
+/* 官網風格斜角按鈕 (水平版) */
 .oto-lang-btn {
     background-color: rgba(255, 255, 255, 0.95);
     color: #444 !important;
-    padding: 12px 18px;
-    font-size: 14px;
+    padding: 10px 18px;
+    font-size: 13.5px;
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s ease;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    white-space: nowrap;
     
     /* 斜角效果 */
-    clip-path: polygon(10px 0%, 100% 0%, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0% 100%, 0% 10px);
+    clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
     
     cursor: pointer;
-    text-align: left;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .oto-lang-btn:hover, 
 .oto-lang-btn.active {
     background-color: #ffffff;
     color: #000 !important;
-    padding-left: 22px; /* 滑過時文字向右微移，符合互動趨勢 */
+    transform: translateY(-3px); /* 滑過時輕微上移，增加立體感 */
 }
 
 @keyframes slideDown {
