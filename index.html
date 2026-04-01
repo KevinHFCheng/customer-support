@@ -20,9 +20,11 @@
             <a href="https://www.otophotonics.com/" target="_blank">
                 <img src="https://www.otophotonics.com/images/project/551/logo2.png" alt="OtO Photonics Logo" class="logo-img">
             </a>
-            <!-- 語系切換按鈕 -->
+            <!-- 語系切換按鈕 (支援三種語系) -->
             <div class="lang-switcher">
-                <button onclick="setLanguage('zh-TW')" id="lang-zh">TW</button>
+                <button onclick="setLanguage('zh-TW')" id="lang-zh-tw">TW</button>
+                <span class="divider">|</span>
+                <button onclick="setLanguage('zh-CN')" id="lang-zh-cn">CN</button>
                 <span class="divider">|</span>
                 <button onclick="setLanguage('en')" id="lang-en">EN</button>
             </div>
@@ -84,10 +86,12 @@
                         <label for="description" data-i18n="labelDesc">問題描述</label>
                         <textarea id="description" name="description" rows="4" required data-i18n-placeholder="placeholderDesc"></textarea>
                     </div>
-                    <!-- 附件或截圖上傳 -->
+                    <!-- 附件或截圖上傳 (支援預覽與管理) -->
                     <div class="form-group full-width">
                         <label for="imageFiles" data-i18n="labelUpload">圖片/截圖上傳 (最多 5 張，支援 JPG/PNG)</label>
                         <input type="file" id="imageFiles" name="imageFiles" accept="image/*" multiple class="file-input">
+                        <!-- 預覽容器 -->
+                        <div id="image-preview" class="preview-grid"></div>
                         <small id="file-count-msg" style="color: #666; margin-top: 5px;" data-i18n="uploadHint">您可以選取多張圖片進行上報，檔案將自動存入雲端案件資料夾</small>
                     </div>
                 </div>

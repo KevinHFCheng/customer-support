@@ -39,6 +39,37 @@ const i18n = {
         submitSuccess: '需求提交成功！報告編號：',
         submitFail: '發生系統錯誤：'
     },
+    'zh-CN': {
+        pageTitle: '客户需求与问题登记',
+        pageSubtitle: '请填写以下信息，我们将儘速为您处理',
+        labelCompany: '公司名称',
+        placeholderCompany: '请输入您的公司名称',
+        labelContact: '客户窗口',
+        placeholderContact: '联系人姓名',
+        labelEmail: '联系邮件',
+        labelSNS: 'Line / Wechat / WhatsApp',
+        placeholderSNS: '社交软件账号',
+        labelProduct: '产品型号',
+        labelSN: '产品序号 (S/N)',
+        placeholderSN: '请输入序号后五码',
+        labelType: '需求类型',
+        optDefault: '请选择类型',
+        optSpec: '产品规格与选型',
+        optTech: '技术咨询',
+        labelDesc: '问题描述',
+        placeholderDesc: '请详细描述您的需求或遇到的问题...',
+        labelUpload: '图片/截图上传 (最多 5 张，支持 JPG/PNG)',
+        uploadHint: '您可以选取多张图片进行上报，文件將自动存入云端案件文件夹',
+        btnSubmit: '提交需求',
+        chatTitle: 'AI 智能客服',
+        chatWelcome: '您好！我是您的智能助手。有任何关于技术规格或 FAQ 的问题都可以问我喔！',
+        chatPlaceholder: '请输入问题...',
+        chatSend: '发送',
+        alertExceedLimit: '抱歉，每次提交最多仅限 5 张图片附件喔！',
+        btnSubmitting: '提交中...',
+        submitSuccess: '需求提交成功！报告编号：',
+        submitFail: '发生系统错误：'
+    },
     'en': {
         pageTitle: 'Customer Requirement & Issue Log',
         pageSubtitle: 'Please fill in the information below, we will handle it as soon as possible.',
@@ -73,6 +104,7 @@ const i18n = {
 };
 
 let currentLang = 'zh-TW';
+let selectedFiles = []; // 用於存放準備提交的檔案物件 [{name, data}, ...]
 
 /**
  * 切換語系函式
@@ -90,54 +122,80 @@ function setLanguage(lang) {
     });
 
     // 更新切換按鈕狀態
-    document.getElementById('lang-zh').classList.toggle('active', lang === 'zh-TW');
+    document.getElementById('lang-zh-tw').classList.toggle('active', lang === 'zh-TW');
+    document.getElementById('lang-zh-cn').classList.toggle('active', lang === 'zh-CN');
     document.getElementById('lang-en').classList.toggle('active', lang === 'en');
 }
 
 // 獲取 DOM 元素
 const regForm = document.getElementById('registrationForm');
-const chatToggle = document.getElementById('chat-toggle-btn');
 const aiChatWidget = document.getElementById('ai-chat-widget');
 const chatInput = document.getElementById('chat-input');
 const sendChat = document.getElementById('send-chat');
 const chatBody = document.getElementById('chat-body');
+const imagePreview = document.getElementById('image-preview');
 
 /**
- * 1. 處理客戶需求表單提交
- * 使用監聽器處理 submit 事件，並以異步 fetch 發送到 GAS
+ * 處理檔案選取與預覽
  */
-regForm.addEventListener('submit', async (e) => {
-    e.preventDefault(); // 阻止表單預設提交行為
-
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true; // 提交期間禁用按鈕，防止重複提交
-    submitBtn.innerText = i18n[currentLang].btnSubmitting;
-
-    // 獲取與驗證檔案
-    const fileInput = regForm.imageFiles;
-    let filesData = [];
-
-    // 若選取檔案超過上限則阻斷提交
-    if (fileInput.files.length > 5) {
+document.getElementById('imageFiles').addEventListener('change', async (e) => {
+    const files = Array.from(e.target.files);
+    
+    // 檢查加上新檔案後是否超過 5 張
+    if (selectedFiles.length + files.length > 5) {
         alert(i18n[currentLang].alertExceedLimit);
-        submitBtn.disabled = false;
-        submitBtn.innerText = i18n[currentLang].btnSubmit;
+        e.target.value = ''; // 清空 input 以便下次觸發
         return;
     }
 
-    // 將所有選取的檔案轉換為 Base64 (使用 Promise.all 異步處理)
-    if (fileInput.files.length > 0) {
-        filesData = await Promise.all(Array.from(fileInput.files).map(file => {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve({
-                    name: file.name,
-                    data: e.target.result
-                });
-                reader.readAsDataURL(file);
-            });
-        }));
+    // 轉換為 Base64 並存入陣列
+    for (const file of files) {
+        const fileObj = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => resolve({ name: file.name, data: ev.target.result });
+            reader.readAsDataURL(file);
+        });
+        selectedFiles.push(fileObj);
     }
+    
+    e.target.value = ''; // 重置 input
+    renderPreviews();
+});
+
+/**
+ * 渲染圖片預覽網格
+ */
+function renderPreviews() {
+    imagePreview.innerHTML = '';
+    selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        
+        item.innerHTML = `
+            <img src="${file.data}" alt="${file.name}">
+            <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
+        `;
+        imagePreview.appendChild(item);
+    });
+}
+
+/**
+ * 刪除已選取檔案
+ */
+window.removeFile = (index) => {
+    selectedFiles.splice(index, 1);
+    renderPreviews();
+};
+
+/**
+ * 1. 處理客戶需求表單提交
+ */
+regForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerText = i18n[currentLang].btnSubmitting;
 
     // 彙整表單數據
     const formData = {
@@ -149,16 +207,12 @@ regForm.addEventListener('submit', async (e) => {
         serialNumber: regForm.serialNumber.value,
         reqType: regForm.reqType.value,
         description: regForm.description.value,
-        files: filesData // 傳送包含多個檔案物件的陣列
+        files: selectedFiles // 使用我們管理的陣列
     };
 
     try {
-        // 使用 POST 方法發送數據到 GAS
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'text/plain;charset=utf-8',
-            },
             body: JSON.stringify(formData)
         });
 
@@ -166,12 +220,13 @@ regForm.addEventListener('submit', async (e) => {
 
         if (result.result === 'success') {
             alert(i18n[currentLang].submitSuccess + result.id);
-            regForm.reset(); // 提交成功後清空表單
+            regForm.reset();
+            selectedFiles = []; // 清空檔案陣列
+            renderPreviews();
         } else {
             alert(i18n[currentLang].submitFail + (result.message || 'Error'));
         }
     } catch (err) {
-        console.error('Submission Error:', err);
         alert(i18n[currentLang].submitFail + err.message);
     } finally {
         submitBtn.disabled = false;
@@ -181,58 +236,45 @@ regForm.addEventListener('submit', async (e) => {
 
 /**
  * 2. AI 聊天室邏輯
- * 包含切換顯示、關閉視窗與發送訊息等功能
  */
-
-// 切換聊天視窗顯示/隱藏
-chatToggle.onclick = () => {
-    const isVisible = aiChatWidget.style.display === 'flex';
-    aiChatWidget.style.display = isVisible ? 'none' : 'flex';
+document.getElementById('ai-chat-widget').onclick = (e) => {
+    if (e.target.id === 'close-chat') return; // 若點擊關閉按鈕則不觸發
+    aiChatWidget.classList.remove('chat-closed');
 };
 
-// 點擊關閉按鈕隱藏視窗
-document.getElementById('close-chat').onclick = () => aiChatWidget.style.display = 'none';
+document.getElementById('close-chat').onclick = (e) => {
+    e.stopPropagation();
+    aiChatWidget.classList.add('chat-closed');
+};
 
-// 處理發送訊息邏輯
 sendChat.onclick = async () => {
     const query = chatInput.value.trim();
-    if (!query) return; // 若無輸入內容則不處理
+    if (!query) return;
 
-    addMessage(query, 'user'); // 將使用者訊息加入視窗
-    chatInput.value = ''; // 清空輸入框
+    addMessage(query, 'user');
+    chatInput.value = '';
 
     try {
-        // 呼叫 GAS GET 接口進行 AI 諮詢處理
         const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}`);
         const result = await response.json();
-        addMessage(result.answer, 'bot'); // 顯示 AI 的回覆內容
+        addMessage(result.answer, 'bot');
     } catch (err) {
-        console.error('Chat Error:', err);
-        addMessage(currentLang === 'zh-TW' ? '抱歉，暫時無法回覆。' : 'Sorry, I cannot reply right now.', 'bot');
+        addMessage(currentLang === 'en' ? 'Service currently unavailable.' : '抱歉，暫時無法回覆。', 'bot');
     }
 };
 
-/**
- * 輔助函式：將訊息加入聊天介面
- * @param {string} text - 訊息內容
- * @param {string} sender - 發送者類型 ('user' 或 'bot')
- */
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}`;
     msgDiv.innerText = text;
     chatBody.appendChild(msgDiv);
-
-    // 自動滾動到最底部以查看最新訊息
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-/**
- * 網頁初始化：自動偵測語系
- */
 window.addEventListener('DOMContentLoaded', () => {
-    // 優先順序：瀏覽器語系 > 預設 (zh-TW)
     const userLang = navigator.language || navigator.userLanguage;
-    const lang = userLang.includes('zh') ? 'zh-TW' : 'en';
+    let lang = 'en';
+    if (userLang.includes('zh-TW') || userLang.includes('zh-HK')) lang = 'zh-TW';
+    else if (userLang.includes('zh')) lang = 'zh-CN';
     setLanguage(lang);
 });
