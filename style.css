@@ -45,80 +45,39 @@ body {
     align-items: center;
 }
 
-/* 語系下拉選單：比照 OtO 官網互動性 */
-.lang-dropdown {
-    position: relative;
-    z-index: 1000;
-}
-
-/* 地球儀按鈕 */
-.globe-btn {
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 50%;
-    transition: all 0.3s ease;
+/* 語系切換器：直接顯示三個水平按鈕 */
+.lang-switcher {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.8;
+    flex-direction: row;
+    gap: 8px;
+    z-index: 100;
 }
 
-.globe-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    opacity: 1;
-}
-
-/* 隱藏式選單容器 - 改為水平排列 */
-.lang-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 10px;
-    display: none; /* 預設隱藏 */
-    flex-direction: row; /* 水平排列 */
-    gap: 10px;
-    box-shadow: none; /* 移除陰影以配合水平設計 */
-    background: transparent;
-    padding: 5px;
-}
-
-.lang-menu.show {
-    display: flex;
-    animation: slideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* 官網風格斜角按鈕 (水平版) */
+/* 官網風格斜角按鈕 */
 .oto-lang-btn {
-    background-color: rgba(255, 255, 255, 0.95);
+    background-color: rgba(255, 255, 255, 0.9);
     color: #444 !important;
-    padding: 10px 18px;
-    font-size: 13.5px;
+    padding: 8px 14px;
+    font-size: 13px;
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s ease;
     white-space: nowrap;
     
-    /* 斜角效果 */
+    /* 精確重現官網左上與右下斜角效果 */
     clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
     
     cursor: pointer;
     text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
 .oto-lang-btn:hover, 
 .oto-lang-btn.active {
     background-color: #ffffff;
     color: #000 !important;
-    transform: translateY(-3px); /* 滑過時輕微上移，增加立體感 */
-}
-
-@keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    transform: translateY(-2px); /* 滑過時向上微移 */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
 }
 
 /* 圖片預覽網格樣式 */
