@@ -1,3 +1,4 @@
+/* 全域變數定義：包含品牌顏色、背景與陰影設定 */
 :root {
     --primary: #216BA5; /* OtO 品牌藍 */
     --secondary: #004098; /* 標誌深藍 */
@@ -9,16 +10,18 @@
     --shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
+/* 基礎樣式重設 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
     font-family: 'Barlow', 'Noto Sans TC', sans-serif;
     background: var(--bg-gradient);
     color: var(--text-color);
     min-height: 100vh;
-    padding-top: 80px; /* 為導覽列留空間 */
+    padding-top: 80px; /* 為固定在頂部的導覽列預留空間 */
 }
 
-/* 導覽列樣式 (比照官網) */
+/* 導覽列樣式 (比照官方網站) */
 .navbar {
     position: fixed;
     top: 0;
@@ -31,29 +34,34 @@ body {
     align-items: center;
     z-index: 1000;
 }
+
 .nav-container {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 0 20px;
 }
+
 .logo-img {
     height: 45px;
     display: block;
 }
 
+/* 主要容器佈局 */
 .container { 
     width: 100%; 
     max-width: 900px; 
     margin: 40px auto;
-    animation: fadeIn 0.8s ease;
+    animation: fadeIn 0.8s ease; /* 入場淡入動畫 */
     padding: 0 20px 40px;
 }
 
+/* 標題區域樣式 */
 header { text-align: center; margin-bottom: 30px; }
 header h1 { font-size: 2.2rem; margin-bottom: 10px; color: #ffffff; font-weight: 700; }
 header p { color: #a5b1c2; }
 
+/* 毛玻璃效果面板 (表單容器) */
 .glass-panel {
     background: var(--glass-bg);
     border-radius: 12px;
@@ -61,11 +69,13 @@ header p { color: #a5b1c2; }
     box-shadow: var(--shadow);
 }
 
+/* 表單網格與組件樣式 */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 .form-group { display: flex; flex-direction: column; }
 .full-width { grid-column: span 2; }
 
 label { font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+
 input, select, textarea {
     padding: 12px;
     border-radius: 10px;
@@ -73,8 +83,14 @@ input, select, textarea {
     background: rgba(255, 255, 255, 0.8);
     transition: all 0.3s;
 }
-input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
 
+input:focus, select:focus, textarea:focus { 
+    border-color: var(--primary); 
+    outline: none; 
+    background: #fff; 
+}
+
+/* 提交按鈕漸層樣式 */
 .primary-btn {
     margin-top: 30px;
     width: 100%;
@@ -88,19 +104,48 @@ input:focus, select:focus, textarea:focus { border-color: var(--primary); outlin
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
 }
-.primary-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
-/* AI Chat Widget Style...*/
-#chat-toggle-btn { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 24px; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; }
-#ai-chat-widget { position: fixed; bottom: 100px; right: 30px; width: 350px; height: 500px; background: white; border-radius: 15px; box-shadow: var(--shadow); display: none; flex-direction: column; overflow: hidden; z-index: 1000; }
+.primary-btn:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+}
+
+/* AI 聊天組件樣式設定 */
+#chat-toggle-btn { 
+    position: fixed; bottom: 30px; right: 30px; 
+    width: 60px; height: 60px; border-radius: 50%; 
+    background: var(--primary); color: white; border: none; 
+    font-size: 24px; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; 
+}
+
+#ai-chat-widget { 
+    position: fixed; bottom: 100px; right: 30px; 
+    width: 350px; height: 500px; background: white; 
+    border-radius: 15px; box-shadow: var(--shadow); 
+    display: none; flex-direction: column; overflow: hidden; z-index: 1000; 
+}
+
 #chat-header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; font-weight: 600; }
 #chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+/* 聊天訊息對話框樣式 */
 .message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 0.9rem; line-height: 1.4; }
 .message.bot { background: #f0f2f5; align-self: flex-start; }
 .message.user { background: var(--primary); color: white; align-self: flex-end; }
+
 #chat-footer { padding: 10px; display: flex; gap: 8px; border-top: 1px solid #eee; }
 #chat-input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; }
 
+/* 其他輔助類別與動畫 */
 .hidden { display: none; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(20px); } 
+    to { opacity: 1; transform: translateY(0); } 
+}
+
+/* 回應式設計：小螢幕切換為單欄佈局 */
+@media (max-width: 600px) { 
+    .form-grid { grid-template-columns: 1fr; } 
+    .full-width { grid-column: span 1; } 
+}

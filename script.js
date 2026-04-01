@@ -1,6 +1,10 @@
-// --- 請填入您的 GAS 部署網址 ---
+/**
+ * 設定 Google Apps Script (GAS) 的部署網址
+ * 該網址用於接收表單數據並處理 AI 聊天請求
+ */
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
 
+// 獲取 DOM 元素
 const regForm = document.getElementById('registrationForm');
 const chatToggle = document.getElementById('chat-toggle-btn');
 const aiChatWidget = document.getElementById('ai-chat-widget');
@@ -8,13 +12,18 @@ const chatInput = document.getElementById('chat-input');
 const sendChat = document.getElementById('send-chat');
 const chatBody = document.getElementById('chat-body');
 
-// 1. 處理表單提交
+/**
+ * 1. 處理客戶需求表單提交
+ * 使用監聽器處理 submit 事件，並以異步 fetch 發送到 GAS
+ */
 regForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // 阻止表單預設提交行為
+    
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
+    submitBtn.disabled = true; // 提交期間禁用按鈕，防止重複提交
     submitBtn.innerText = '提交中...';
 
+    // 彙整表單數據
     const formData = {
         companyName: regForm.companyName.value,
         clientContact: regForm.clientContact.value,
@@ -28,10 +37,11 @@ regForm.addEventListener('submit', async (e) => {
     };
 
     try {
+        // 使用 POST 方法發送數據到 GAS
         const response = await fetch(GAS_WEB_APP_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain;charset=utf-8', // 避免觸發 CORS Preflight
+                'Content-Type': 'text/plain;charset=utf-8', // 使用 text/plain 以避免 CORS Preflight 預檢請求限制
             },
             body: JSON.stringify(formData)
         });
@@ -40,49 +50,64 @@ regForm.addEventListener('submit', async (e) => {
 
         if (result.result === 'success') {
             alert(`提交成功！您的報告編號為：${result.id}`);
-            regForm.reset();
+            regForm.reset(); // 提交成功後清空表單
         } else {
-            // 這裡改為顯示 GAS 傳回的錯誤訊息
+            // 顯示來自 GAS 的具體錯誤訊息
             alert('提交失敗：' + (result.message || '原因不明'));
         }
     } catch (err) {
-        console.error(err);
-        alert('發生錯誤：' + err.message);
+        console.error('Submission Error:', err);
+        alert('發生系統錯誤：' + err.message);
     } finally {
-        submitBtn.disabled = false;
+        submitBtn.disabled = false; // 恢復按鈕狀態
         submitBtn.innerText = '提交需求';
     }
 });
 
-// 2. AI 聊天室邏輯
+/**
+ * 2. AI 聊天室邏輯
+ * 包含切換顯示、關閉視窗與發送訊息等功能
+ */
+
+// 切換聊天視窗顯示/隱藏
 chatToggle.onclick = () => {
     const isVisible = aiChatWidget.style.display === 'flex';
     aiChatWidget.style.display = isVisible ? 'none' : 'flex';
 };
 
+// 點擊關閉按鈕隱藏視窗
 document.getElementById('close-chat').onclick = () => aiChatWidget.style.display = 'none';
 
+// 處理發送訊息邏輯
 sendChat.onclick = async () => {
     const query = chatInput.value.trim();
-    if (!query) return;
+    if (!query) return; // 若無輸入內容則不處理
 
-    addMessage(query, 'user');
-    chatInput.value = '';
+    addMessage(query, 'user'); // 將使用者訊息加入視窗
+    chatInput.value = ''; // 清空輸入框
 
-    // 呼叫 GAS GET 接口進行 AI 諮詢
     try {
+        // 呼叫 GAS GET 接口進行 AI 諮詢處理
         const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}`);
         const result = await response.json();
-        addMessage(result.answer, 'bot');
+        addMessage(result.answer, 'bot'); // 顯示 AI 的回覆內容
     } catch (err) {
-        addMessage('抱歉，我暫時無法回覆您的問題。', 'bot');
+        console.error('Chat Error:', err);
+        addMessage('抱歉，我暫時無法回覆您的問題，請稍後再試。', 'bot');
     }
 };
 
+/**
+ * 輔助函式：將訊息加入聊天介面
+ * @param {string} text - 訊息內容
+ * @param {string} sender - 發送者類型 ('user' 或 'bot')
+ */
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}`;
     msgDiv.innerText = text;
     chatBody.appendChild(msgDiv);
+    
+    // 自動滾動到最底部以查看最新訊息
     chatBody.scrollTop = chatBody.scrollHeight;
 }

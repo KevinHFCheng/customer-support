@@ -1,36 +1,45 @@
+# 工作流名稱：部署 Anti-Gravity 靜態網站
 name: Deploy Anti-Gravity Site
 
+# 設定觸發條件
 on:
   push:
     branches:
-      - main  # 當你 push 到 main 分支時觸發
+      - main  # 當 main 分支有程式碼推送 (push) 時觸發此工作流
 
+# 設定 GitHub Actions 的權限，確保能讀取內容並寫入 GitHub Pages
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: read      # 需讀取原始碼
+  pages: write         # 需寫入 GitHub Pages
+  id-token: write      # 部署 Pages 所需的身份驗證
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest # 使用最新版的 Ubuntu 虛擬機執行環境
     steps:
+      # 步驟 1: 從 GitHub 取得最新的原始碼
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 步驟 2: 注入敏感資訊（Secrets）到網頁中
+      # 為了安全性，API Key 等資訊不直接寫在代碼中，而是透過 GitHub Secrets 在部署時替換
       - name: Inject Secrets into Webpage
         run: |
-          # 這段指令會自動將 HTML 裡的佔位符替換為 GitHub Secrets
-          sed -i "s|THE_GEMINI_API_KEY_PLACEHOLDER|${{ secrets.GEMINI_API_KEY }}|g" index.html
-          sed -i "s|THE_GAS_URL_PLACEHOLDER|${{ secrets.GAS_WEB_APP_URL }}|g" index.html
+          # 使用 sed 指令將 HTML/JS 裡的佔位符替換為 GitHub Secrets 中儲存的實際數值
+          sed -i "s|THE_GEMINI_API_KEY_PLACEHOLDER|${{ secrets.GEMINI_API_KEY }}|g" script.js
+          sed -i "s|THE_GAS_URL_PLACEHOLDER|${{ secrets.GAS_WEB_APP_URL }}|g" script.js
 
+      # 步驟 3: 設定 GitHub Pages 部署環境
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      # 步驟 4: 上傳待部署的檔案（Artifact）
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # 部署當前目錄下的所有檔案
+          path: '.'  # 部署專案根目錄下的所有檔案
 
+      # 步驟 5: 執行最後的部署動作，將檔案發布到 GitHub Pages 伺服器
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

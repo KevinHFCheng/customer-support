@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <!-- 設定網頁編碼與視窗縮放，確保行動裝置相容性 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 網頁標題與 SEO 資訊 -->
     <title>客戶需求與問題登記系統 | OtO Photonics</title>
+    
+    <!-- 引入外部樣式表與 Google Fonts (Barlow & Noto Sans TC) -->
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;600&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- 導覽列 (比照官網) -->
+    <!-- 導覽列區域：比照官方網站風格，包含公司 Logo -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="https://www.otophotonics.com/" target="_blank">
@@ -18,40 +23,47 @@
     </nav>
 
     <div class="container">
-        <!-- 頂部標題 -->
+        <!-- 頁面標題與簡介 -->
         <header>
             <h1>客戶需求與問題登記</h1>
             <p>請填寫以下資訊，我們將儘速為您處理</p>
         </header>
 
-        <!-- 表單區域 -->
+        <!-- 主要表單區域：使用毛玻璃效果 (Glassmorphism) 設計 -->
         <main class="glass-panel">
             <form id="registrationForm">
                 <div class="form-grid">
+                    <!-- 公司名稱 -->
                     <div class="form-group">
                         <label for="companyName">公司名稱</label>
                         <input type="text" id="companyName" name="companyName" required placeholder="請輸入您的公司名稱">
                     </div>
+                    <!-- 客戶窗口 -->
                     <div class="form-group">
                         <label for="clientContact">客戶窗口</label>
                         <input type="text" id="clientContact" name="clientContact" required placeholder="聯絡人姓名">
                     </div>
+                    <!-- 聯繫郵件 -->
                     <div class="form-group">
                         <label for="email">聯繫郵件</label>
                         <input type="email" id="email" name="email" required placeholder="example@mail.com">
                     </div>
+                    <!-- 社群軟體帳號 -->
                     <div class="form-group">
                         <label for="snsAccount">Line / Wechat / WhatsApp</label>
                         <input type="text" id="snsAccount" name="snsAccount" placeholder="社群軟體帳號">
                     </div>
+                    <!-- 產品型號 -->
                     <div class="form-group">
                         <label for="productModel">產品型號</label>
                         <input type="text" id="productModel" name="productModel" required placeholder="EX : SE2030-050-VNIR">
                     </div>
+                    <!-- 產品序號 -->
                     <div class="form-group">
                         <label for="serialNumber">產品序號 (S/N)</label>
                         <input type="text" id="serialNumber" name="serialNumber" placeholder="請輸入序號後五碼">
                     </div>
+                    <!-- 需求類型選擇 -->
                     <div class="form-group full-width">
                         <label for="reqType">需求類型</label>
                         <select id="reqType" name="reqType" required>
@@ -60,37 +72,48 @@
                             <option value="技術諮詢">技術諮詢</option>
                         </select>
                     </div>
+                    <!-- 詳細問題描述 -->
                     <div class="form-group full-width">
                         <label for="description">問題描述</label>
                         <textarea id="description" name="description" rows="4" required placeholder="請詳細描述您的需求或遇到的問題..."></textarea>
                     </div>
+                    <!-- 附件或截圖連結 -->
                     <div class="form-group full-width">
                         <label for="imgUrl">圖片/截圖網址</label>
                         <input type="text" id="imgUrl" name="imgUrl" placeholder="請貼上圖片連結或 Google Drive 分享連結">
                     </div>
                 </div>
+                <!-- 提交按鈕 -->
                 <button type="submit" id="submitBtn" class="primary-btn">提交需求</button>
             </form>
         </main>
     </div>
 
-    <!-- AI 智能客服小組件 -->
+    <!-- AI 智能客服小組件：提供即時技術諮詢 -->
     <div id="ai-chat-widget" class="chat-closed">
+        <!-- 聊天視窗頭部 -->
         <div id="chat-header">
             <span>AI 智能客服</span>
             <button id="close-chat">×</button>
         </div>
+        <!-- 聊天訊息顯示區域 -->
         <div id="chat-body">
             <div class="message bot">您好！我是您的智能助手。有任何關於技術規格或 FAQ 的問題都可以問我喔！</div>
         </div>
+        <!-- 聊天輸入區域 -->
         <div id="chat-footer">
             <input type="text" id="chat-input" placeholder="請輸入問題...">
             <button id="send-chat">傳送</button>
         </div>
     </div>
+    
+    <!-- 懸浮式 AI 聊天開啟按鈕 -->
     <button id="chat-toggle-btn">💬</button>
 
+    <!-- 提交時的載入狀態顯示 -->
     <div id="loading" class="hidden">提交中...</div>
+    
+    <!-- 引入主要邏輯腳本 -->
     <script src="script.js"></script>
 </body>
 </html>
