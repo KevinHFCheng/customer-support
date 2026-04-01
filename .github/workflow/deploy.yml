@@ -1,0 +1,36 @@
+name: Deploy Anti-Gravity Site
+
+on:
+  push:
+    branches:
+      - main  # 當你 push 到 main 分支時觸發
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Inject Secrets into Webpage
+        run: |
+          # 這段指令會自動將 HTML 裡的佔位符替換為 GitHub Secrets
+          sed -i "s|THE_GEMINI_API_KEY_PLACEHOLDER|${{ secrets.GEMINI_API_KEY }}|g" index.html
+          sed -i "s|THE_GAS_URL_PLACEHOLDER|${{ secrets.GAS_WEB_APP_URL }}|g" index.html
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'  # 部署當前目錄下的所有檔案
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
