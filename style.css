@@ -45,32 +45,38 @@ body {
     align-items: center;
 }
 
-/* 語系切換器樣式 */
+/* 語系切換器樣式 - 強化可見度 */
 .lang-switcher {
     display: flex;
     align-items: center;
-    gap: 8px;
-    color: white;
-    font-size: 0.9rem;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
 }
 
 .lang-switcher button {
     background: none;
     border: none;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.8);
     cursor: pointer;
-    padding: 4px 8px;
-    transition: all 0.3s ease;
+    padding: 2px 10px;
+    transition: all 0.2s ease;
     font-weight: 500;
+    font-size: 0.85rem;
 }
 
 .lang-switcher button:hover, 
 .lang-switcher button.active {
-    color: white;
+    color: #ffd700; /* 使用金黃色突顯當前語系 */
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
 }
 
 .lang-switcher .divider {
-    opacity: 0.3;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 0.8rem;
 }
 
 /* 圖片預覽網格樣式 */
