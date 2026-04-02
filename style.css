@@ -204,11 +204,28 @@ input:focus, select:focus, textarea:focus {
     font-size: 24px; cursor: pointer; box-shadow: var(--shadow); z-index: 1000; 
 }
 
+/* 修正後的 AI 聊天組件樣式 */
 #ai-chat-widget { 
-    position: fixed; bottom: 100px; right: 30px; 
-    width: 350px; height: 500px; background: white; 
-    border-radius: 15px; box-shadow: var(--shadow); 
-    display: none; flex-direction: column; overflow: hidden; z-index: 1000; 
+    position: fixed; 
+    bottom: 100px; 
+    right: 30px; 
+    width: 350px; 
+    height: 500px; 
+    background: white; 
+    border-radius: 15px; 
+    box-shadow: var(--shadow); 
+    display: flex;
+    flex-direction: column; 
+    overflow: hidden; 
+    z-index: 1000;
+    transition: all 0.3s ease; /* 加入滑順動畫 */
+}
+
+/* 當視窗處於關閉狀態時，隱藏並下移 */
+#ai-chat-widget.chat-closed {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
 }
 
 #chat-header { background: var(--primary); color: white; padding: 15px; display: flex; justify-content: space-between; font-weight: 600; }

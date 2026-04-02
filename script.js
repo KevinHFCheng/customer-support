@@ -242,17 +242,22 @@ regForm.addEventListener('submit', async (e) => {
 /**
  * 2. AI 聊天室邏輯
  */
-document.getElementById('ai-chat-widget').onclick = (e) => {
-    if (e.target.id === 'close-chat') return; // 若點擊關閉按鈕則不觸發
-    aiChatWidget.classList.remove('chat-closed');
+// 獲取開啟按鈕
+const chatToggleBtn = document.getElementById('chat-toggle-btn');
+
+// 點擊右下角 💬 按鈕開啟/關閉
+chatToggleBtn.onclick = () => {
+    aiChatWidget.classList.toggle('chat-closed');
 };
 
+// 點擊聊天視窗內部的關閉按鈕 (X)
 document.getElementById('close-chat').onclick = (e) => {
     e.stopPropagation();
     aiChatWidget.classList.add('chat-closed');
 };
 
-sendChat.onclick = async () => {
+// 傳送訊息邏輯
+const handleChatSubmit = async () => {
     const query = chatInput.value.trim();
     if (!query) return;
 
@@ -260,12 +265,22 @@ sendChat.onclick = async () => {
     chatInput.value = '';
 
     try {
+        // 發送請求到 GAS，帶上當前語系
         const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}`);
         const result = await response.json();
         addMessage(result.answer, 'bot');
     } catch (err) {
+        console.error('Chat Error:', err);
         addMessage(currentLang === 'en' ? 'Service currently unavailable.' : '抱歉，暫時無法回覆。', 'bot');
     }
+};
+
+// 點擊傳送按鈕
+sendChat.onclick = handleChatSubmit;
+
+// 支援在輸入框按 Enter 鍵傳送
+chatInput.onkeypress = (e) => {
+    if (e.key === 'Enter') handleChatSubmit();
 };
 
 function addMessage(text, sender) {
