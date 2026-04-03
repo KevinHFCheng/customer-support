@@ -20,11 +20,20 @@
             <a href="https://www.otophotonics.com/" target="_blank">
                 <img src="https://www.otophotonics.com/images/project/551/logo2.png" alt="OtO Photonics Logo" class="logo-img">
             </a>
-            <!-- 語系切換按鈕 (直接顯示三個 OtO 官網風格按鈕) -->
+            <!-- 語系切換按鈕 (簡碼化：預設顯示 TC/SC/EN，滑鼠移入顯示全文) -->
             <div class="lang-switcher">
-                <a href="javascript:void(0)" onclick="setLanguage('zh-TW')" id="lang-zh-tw" class="oto-lang-btn">繁體中文</a>
-                <a href="javascript:void(0)" onclick="setLanguage('zh-CN')" id="lang-zh-cn" class="oto-lang-btn">简体中文</a>
-                <a href="javascript:void(0)" onclick="setLanguage('en')" id="lang-en" class="oto-lang-btn">English</a>
+                <a href="javascript:void(0)" onclick="setLanguage('zh-TW')" id="lang-zh-tw" class="oto-lang-btn">
+                    <span class="icon-text">TC</span>
+                    <span class="lang-text">繁體中文</span>
+                </a>
+                <a href="javascript:void(0)" onclick="setLanguage('zh-CN')" id="lang-zh-cn" class="oto-lang-btn">
+                    <span class="icon-text">SC</span>
+                    <span class="lang-text">简体中文</span>
+                </a>
+                <a href="javascript:void(0)" onclick="setLanguage('en')" id="lang-en" class="oto-lang-btn">
+                    <span class="icon-text">EN</span>
+                    <span class="lang-text">English</span>
+                </a>
             </div>
         </div>
     </nav>

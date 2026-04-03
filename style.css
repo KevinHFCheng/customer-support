@@ -57,27 +57,62 @@ body {
 .oto-lang-btn {
     background-color: rgba(255, 255, 255, 0.9);
     color: #444 !important;
-    padding: 8px 14px;
+    padding: 8px 12px;
     font-size: 13px;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     
     /* 精確重現官網左上與右下斜角效果 */
     clip-path: polygon(8px 0%, 100% 0%, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0% 100%, 0% 8px);
     
     cursor: pointer;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 0;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    max-width: 42px; /* 預設只顯示圖示的寬度 */
+    overflow: hidden;
+}
+
+.icon-text {
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    width: 18px;
+    text-align: center;
+    color: var(--primary);
+    transition: color 0.3s ease;
+}
+
+.lang-text {
+    opacity: 0;
+    width: 0;
+    transition: all 0.3s ease;
+    margin-left: 0;
 }
 
 .oto-lang-btn:hover, 
 .oto-lang-btn.active {
     background-color: #ffffff;
     color: #000 !important;
-    transform: translateY(-2px); /* 滑過時向上微移 */
+    transform: translateY(-2px);
     box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    max-width: 120px; /* 展開後的寬度 */
+    gap: 8px;
+    padding-right: 16px;
+}
+
+.oto-lang-btn:hover .icon-text,
+.oto-lang-btn.active .icon-text {
+    color: var(--accent); /* 滑過或選中時簡碼變色 */
+}
+
+.oto-lang-btn:hover .lang-text,
+.oto-lang-btn.active .lang-text {
+    opacity: 1;
+    width: auto;
 }
 
 /* 圖片預覽網格樣式 */
