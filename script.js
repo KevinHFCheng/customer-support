@@ -312,13 +312,14 @@ window.addEventListener('DOMContentLoaded', () => {
  * 自訂彈窗顯示控制
  */
 function showAlert(message) {
+    if (!message) return; // ✅ 增加防呆：無訊息則不顯示
     const modal = document.getElementById('custom-modal');
     const msgEl = document.getElementById('modal-message');
     msgEl.innerText = message;
-    modal.classList.remove('hidden');
+    modal.style.display = 'flex'; // ✅ 使用直接 style 控制更穩定
 }
 
 function closeModal() {
     const modal = document.getElementById('custom-modal');
-    modal.classList.add('hidden');
+    modal.style.display = 'none'; // ✅ 隱藏
 }

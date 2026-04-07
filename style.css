@@ -275,7 +275,7 @@ input:focus, select:focus, textarea:focus {
 #chat-input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 8px; }
 
 /* 其他輔助類別與動畫 */
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 @keyframes fadeIn { 
     from { opacity: 0; transform: translateY(20px); } 
