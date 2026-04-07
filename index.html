@@ -59,15 +59,24 @@
                         <label for="clientContact" data-i18n="labelContact">客戶窗口</label>
                         <input type="text" id="clientContact" name="clientContact" required data-i18n-placeholder="placeholderContact">
                     </div>
+                    <!-- 社群軟體類型選擇 -->
+                    <div class="form-group">
+                        <label for="snsType" data-i18n="labelSNSType">社群軟體類型</label>
+                        <select id="snsType" name="snsType">
+                            <option value="Line">Line</option>
+                            <option value="WhatsApp">WhatsApp</option>
+                            <option value="WeChat">WeChat</option>
+                        </select>
+                    </div>
+                    <!-- 通訊帳號輸入 -->
+                    <div class="form-group">
+                        <label for="snsAccount" data-i18n="labelSNSID">通訊帳號 (ID)</label>
+                        <input type="text" id="snsAccount" name="snsAccount" data-i18n-placeholder="placeholderSNSID">
+                    </div>
                     <!-- 聯繫郵件 -->
                     <div class="form-group">
                         <label for="email" data-i18n="labelEmail">聯繫郵件</label>
                         <input type="email" id="email" name="email" required placeholder="example@mail.com">
-                    </div>
-                    <!-- 社群軟體帳號 -->
-                    <div class="form-group">
-                        <label for="snsAccount" data-i18n="labelSNS">Line / Wechat / WhatsApp</label>
-                        <input type="text" id="snsAccount" name="snsAccount" data-i18n-placeholder="placeholderSNS">
                     </div>
                     <!-- 產品型號 -->
                     <div class="form-group">
@@ -128,6 +137,15 @@
     
     <!-- 懸浮式 AI 聊天開啟按鈕 -->
     <button id="chat-toggle-btn">💬</button>
+
+    <!-- 自訂專業彈窗 (取代瀏覽器預設 alert) -->
+    <div id="custom-modal" class="modal-overlay hidden">
+        <div class="modal-content glass-panel">
+            <h3 id="modal-title" data-i18n="modalTitle">系統提示</h3>
+            <p id="modal-message"></p>
+            <button onclick="closeModal()" class="primary-btn" style="margin-top: 20px;" data-i18n="btnOk">確定</button>
+        </div>
+    </div>
 
     <!-- 提交時的載入狀態顯示 -->
     <div id="loading" class="hidden">提交中...</div>

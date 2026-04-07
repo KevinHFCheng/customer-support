@@ -16,8 +16,9 @@ const i18n = {
         labelContact: '客戶窗口',
         placeholderContact: '聯絡人姓名',
         labelEmail: '聯繫郵件',
-        labelSNS: 'Line / Wechat / WhatsApp',
-        placeholderSNS: '社群軟體帳號',
+        labelSNSType: '社群軟體類型',
+        labelSNSID: '通訊帳號 (ID)',
+        placeholderSNSID: '請輸入帳號 ID',
         labelProduct: '產品型號',
         labelSN: '產品序號 (S/N)',
         placeholderSN: '請輸入序號後五碼',
@@ -37,7 +38,9 @@ const i18n = {
         alertExceedLimit: '抱歉，每次提交最多僅限 5 張圖片附件喔！',
         btnSubmitting: '提交中...',
         submitSuccess: '需求提交成功！報告編號：',
-        submitFail: '發生系統錯誤：'
+        submitFail: '發生系統錯誤：',
+        modalTitle: '系統提示',
+        btnOk: '確定'
     },
     'zh-CN': {
         pageTitle: '客户需求与问题登记',
@@ -47,8 +50,9 @@ const i18n = {
         labelContact: '客户窗口',
         placeholderContact: '联系人姓名',
         labelEmail: '联系邮件',
-        labelSNS: 'Line / Wechat / WhatsApp',
-        placeholderSNS: '社交软件账号',
+        labelSNSType: '社交平台类型',
+        labelSNSID: '通讯账号 (ID)',
+        placeholderSNSID: '请输入账号 ID',
         labelProduct: '产品型号',
         labelSN: '产品序号 (S/N)',
         placeholderSN: '请输入序号后五码',
@@ -68,7 +72,9 @@ const i18n = {
         alertExceedLimit: '抱歉，每次提交最多仅限 5 张图片附件喔！',
         btnSubmitting: '提交中...',
         submitSuccess: '需求提交成功！报告编号：',
-        submitFail: '发生系统错误：'
+        submitFail: '发生系统错误：',
+        modalTitle: '系统提示',
+        btnOk: '确定'
     },
     'en': {
         pageTitle: 'Customer Requirement & Issue Log',
@@ -78,8 +84,9 @@ const i18n = {
         labelContact: 'Contact Person',
         placeholderContact: 'Your name',
         labelEmail: 'Email Address',
-        labelSNS: 'Social Media (Line/Wechat/WA)',
-        placeholderSNS: 'Social account id',
+        labelSNSType: 'Social Platform',
+        labelSNSID: 'Account ID',
+        placeholderSNSID: 'Enter your ID',
         labelProduct: 'Product Model',
         labelSN: 'Serial Number (S/N)',
         placeholderSN: 'Last 5 digits of SN',
@@ -99,7 +106,9 @@ const i18n = {
         alertExceedLimit: 'Sorry, max 5 images per submission!',
         btnSubmitting: 'Submitting...',
         submitSuccess: 'Form submitted successfully! ID: ',
-        submitFail: 'System Error: '
+        submitFail: 'System Error: ',
+        modalTitle: 'System Alert',
+        btnOk: 'OK'
     }
 };
 
@@ -148,7 +157,7 @@ document.getElementById('imageFiles').addEventListener('change', async (e) => {
     
     // 檢查加上新檔案後是否超過 5 張
     if (selectedFiles.length + files.length > 5) {
-        alert(i18n[currentLang].alertExceedLimit);
+        showAlert(i18n[currentLang].alertExceedLimit);
         e.target.value = ''; // 清空 input 以便下次觸發
         return;
     }
@@ -207,7 +216,7 @@ regForm.addEventListener('submit', async (e) => {
         companyName: regForm.companyName.value,
         clientContact: regForm.clientContact.value,
         email: regForm.email.value,
-        snsAccount: regForm.snsAccount.value,
+        snsAccount: `${regForm.snsType.value}:${regForm.snsAccount.value}`,
         productModel: regForm.productModel.value,
         serialNumber: regForm.serialNumber.value,
         reqType: regForm.reqType.value,
@@ -224,15 +233,15 @@ regForm.addEventListener('submit', async (e) => {
         const result = await response.json();
 
         if (result.result === 'success') {
-            alert(i18n[currentLang].submitSuccess + result.id);
+            showAlert(i18n[currentLang].submitSuccess + result.id);
             regForm.reset();
             selectedFiles = []; // 清空檔案陣列
             renderPreviews();
         } else {
-            alert(i18n[currentLang].submitFail + (result.message || 'Error'));
+            showAlert(i18n[currentLang].submitFail + (result.message || 'Error'));
         }
     } catch (err) {
-        alert(i18n[currentLang].submitFail + err.message);
+        showAlert(i18n[currentLang].submitFail + err.message);
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerText = i18n[currentLang].btnSubmit;
@@ -298,3 +307,18 @@ window.addEventListener('DOMContentLoaded', () => {
     else if (userLang.includes('zh')) lang = 'zh-CN';
     setLanguage(lang);
 });
+
+/**
+ * 自訂彈窗顯示控制
+ */
+function showAlert(message) {
+    const modal = document.getElementById('custom-modal');
+    const msgEl = document.getElementById('modal-message');
+    msgEl.innerText = message;
+    modal.classList.remove('hidden');
+}
+
+function closeModal() {
+    const modal = document.getElementById('custom-modal');
+    modal.classList.add('hidden');
+}
