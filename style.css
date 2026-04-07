@@ -282,10 +282,61 @@ input:focus, select:focus, textarea:focus {
     to { opacity: 1; transform: translateY(0); } 
 }
 
-/* 回應式設計：小螢幕切換為單欄佈局 */
+/* 響應式優化：手機版與平板專用佈局 */
 @media (max-width: 600px) { 
-    .form-grid { grid-template-columns: 1fr; } 
-    .full-width { grid-column: span 1; } 
+    /* 1. 調整整體外邊距，讓內容在小螢幕能靠邊但有呼吸感 */
+    .container { 
+        margin: 20px auto;
+        padding: 0 12px 30px;
+    }
+
+    /* 2. 縮減毛玻璃面板的內距 (這是防止欄位溢出的關鍵) */
+    .glass-panel { 
+        padding: 24px 16px; 
+    }
+
+    /* 3. 強制所有網格欄位變為單一整欄布局 */
+    .form-grid { 
+        grid-template-columns: 1fr; 
+        gap: 16px;
+    }
+    
+    .full-width { 
+        grid-column: span 1; 
+    }
+
+    /* 4. 導覽列優化：自動調整高度並縮小 Logo */
+    .navbar {
+        height: auto;
+        padding: 12px 0;
+    }
+    
+    .nav-container {
+        flex-direction: row; 
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .logo-img {
+        height: 32px; /* 縮小 Logo 尺寸避免推擠 */
+    }
+
+    /* 5. 標題字體調整 */
+    header h1 {
+        font-size: 1.7rem;
+        word-break: keep-all; /* 防止中文隨意斷行 */
+    }
+
+    header p {
+        font-size: 0.9rem;
+    }
+
+    /* 6. 語系切換按鈕優化：手機版預設只顯示簡碼，避免重疊 */
+    .oto-lang-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        max-width: 38px;
+    }
 }
 
 /* --- 自訂彈窗樣式 (Modal) --- */
