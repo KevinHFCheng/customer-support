@@ -28,14 +28,14 @@ const i18n = {
         optTech: '技術諮詢',
         labelDesc: '問題描述',
         placeholderDesc: '請詳細描述您的需求或遇到的問題...',
-        labelUpload: '圖片/截圖上傳 (最多 5 張，支援 JPG/PNG)',
-        uploadHint: '您可以選取多張圖片進行上報，檔案將自動存入雲端案件資料夾',
+        labelUpload: '附件上傳 (可以上傳文件或圖檔，最多 5 個附件)',
+        uploadHint: '您可以選取多個附件進行上報，檔案將自動存入雲端案件資料夾',
         btnSubmit: '提交需求',
         chatTitle: 'AI 智能客服',
         chatWelcome: '您好！我是您的智能助手。有任何關於技術規格或 FAQ 的問題都可以問我喔！',
         chatPlaceholder: '請輸入問題...',
         chatSend: '傳送',
-        alertExceedLimit: '抱歉，每次提交最多僅限 5 張圖片附件喔！',
+        alertExceedLimit: '抱歉，每次提交最多僅限 5 個附件喔！',
         btnSubmitting: '提交中...',
         submitSuccess: '需求提交成功！報告編號：',
         submitFail: '發生系統錯誤：',
@@ -62,14 +62,14 @@ const i18n = {
         optTech: '技术咨询',
         labelDesc: '问题描述',
         placeholderDesc: '请详细描述您的需求或遇到的问题...',
-        labelUpload: '图片/截图上传 (最多 5 张，支持 JPG/PNG)',
-        uploadHint: '您可以选取多张图片进行上报，文件將自动存入云端案件文件夹',
+        labelUpload: '附件上传 (可以上传文件或图档，最多 5 个附件)',
+        uploadHint: '您可以选取多个附件进行上報，文件將自动存入云端案件文件夹',
         btnSubmit: '提交需求',
         chatTitle: 'AI 智能客服',
         chatWelcome: '您好！我是您的智能助手。有任何关于技术规格或 FAQ 的问题都可以问我喔！',
         chatPlaceholder: '请输入问题...',
         chatSend: '发送',
-        alertExceedLimit: '抱歉，每次提交最多仅限 5 张图片附件喔！',
+        alertExceedLimit: '抱歉，每次提交最多仅限 5 个附件喔！',
         btnSubmitting: '提交中...',
         submitSuccess: '需求提交成功！报告编号：',
         submitFail: '发生系统错误：',
@@ -96,14 +96,14 @@ const i18n = {
         optTech: 'Technical Inquiry',
         labelDesc: 'Description',
         placeholderDesc: 'Please describe your requirement or issue in detail...',
-        labelUpload: 'Images Upload (Max 5, JPG/PNG supported)',
-        uploadHint: 'You can select multiple images. Files will be saved to your case folder.',
+        labelUpload: 'Upload Attachments (Documents or images, max 5)',
+        uploadHint: 'You can select multiple attachments. Files will be saved to your case folder.',
         btnSubmit: 'Submit Request',
         chatTitle: 'AI Support',
         chatWelcome: 'Hello! I am your AI assistant. Ask me anything about specs or FAQ!',
         chatPlaceholder: 'Type your question...',
         chatSend: 'Send',
-        alertExceedLimit: 'Sorry, max 5 images per submission!',
+        alertExceedLimit: 'Sorry, max 5 attachments per submission!',
         btnSubmitting: 'Submitting...',
         submitSuccess: 'Form submitted successfully! ID: ',
         submitFail: 'System Error: ',
@@ -185,8 +185,14 @@ function renderPreviews() {
         const item = document.createElement('div');
         item.className = 'preview-item';
 
+        // 判斷是否為圖片，若非圖片則顯示文件圖示
+        const isImage = file.data.startsWith('data:image/');
+        const previewContent = isImage 
+            ? `<img src="${file.data}" alt="${file.name}">`
+            : `<div class="file-icon-placeholder">📄<br><span class="file-name-hint">${file.name}</span></div>`;
+
         item.innerHTML = `
-            <img src="${file.data}" alt="${file.name}">
+            ${previewContent}
             <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
         `;
         imagePreview.appendChild(item);

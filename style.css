@@ -163,6 +163,31 @@ body {
     background: #ff3b30;
 }
 
+/* 非圖片檔案預覽樣式 */
+.file-icon-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    color: #6c757d;
+    font-size: 24px;
+    text-align: center;
+    padding: 10px;
+}
+
+.file-name-hint {
+    font-size: 10px;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-top: 5px;
+    color: #999;
+}
+
 .logo-img {
     height: 45px;
     display: block;
