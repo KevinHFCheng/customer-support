@@ -2,7 +2,7 @@
  * 設定 Google Apps Script (GAS) 的部署網址 (v1.1 - 支援檔案上傳功能)
  * 該網址用於接收表單數據並處理 AI 聊天請求
  */
-const GAS_WEB_APP_URL = "GAS_WEB_APP_URL";
+const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
 //const GAS_WEB_APP_URL = 
 /**
  * --- 多國語言設定 (i18n) ---
