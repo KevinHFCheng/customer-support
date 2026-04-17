@@ -2,8 +2,8 @@
  * 設定 Google Apps Script (GAS) 的部署網址 (v1.1 - 支援檔案上傳功能)
  * 該網址用於接收表單數據並處理 AI 聊天請求
  */
-const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
-
+const GAS_WEB_APP_URL = "GAS_WEB_APP_URL";
+//const GAS_WEB_APP_URL = 
 /**
  * --- 多國語言設定 (i18n) ---
  */
@@ -154,7 +154,7 @@ const imagePreview = document.getElementById('image-preview');
  */
 document.getElementById('imageFiles').addEventListener('change', async (e) => {
     const files = Array.from(e.target.files);
-    
+
     // 檢查加上新檔案後是否超過 5 張
     if (selectedFiles.length + files.length > 5) {
         showAlert(i18n[currentLang].alertExceedLimit);
@@ -171,7 +171,7 @@ document.getElementById('imageFiles').addEventListener('change', async (e) => {
         });
         selectedFiles.push(fileObj);
     }
-    
+
     e.target.value = ''; // 重置 input
     renderPreviews();
 });
@@ -184,7 +184,7 @@ function renderPreviews() {
     selectedFiles.forEach((file, index) => {
         const item = document.createElement('div');
         item.className = 'preview-item';
-        
+
         item.innerHTML = `
             <img src="${file.data}" alt="${file.name}">
             <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
