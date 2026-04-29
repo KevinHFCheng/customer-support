@@ -1,31 +1,24 @@
 /**
  * 波長範圍與解析度查詢邏輯 (spec.js)
- * 使用 Google Visualization API 以解決直接 fetch 可能產生的 CORS 跨網域問題
+ * 改為透過 Google Apps Script (GAS) 進行後端查詢，確保與 index.html 模式一致
  */
-
-const SPREADSHEET_ID = '1aVrXJw50Zbrt--n5dFAmCb7i55je_ZFx';
-const SHEET_NAME = '光譜儀_命名規則';
-const RANGE = 'AC65:AD108';
 
 const specSearchForm = document.getElementById('specSearchForm');
 const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
-// 載入 Google Visualization 函式庫
-google.charts.load('current', { 'packages': ['corechart'] });
-
 // 增加 i18n 支援
 if (typeof i18n !== 'undefined') {
     i18n['zh-TW'].specTitle = '波長範圍與解析度';
     i18n['zh-TW'].specSubtitle = '請輸入產品型號以查詢對應的感測器資訊';
     i18n['zh-CN'].specTitle = '波长范围与解析度';
-    i18n['zh-CN'].specSubtitle = '请输入产品型号以查询对应的感測器信息';
+    i18n['zh-CN'].specSubtitle = '请输入 product 型号以查询对应的感測器信息';
     i18n['en'].specTitle = 'Range & Resolution';
     i18n['en'].specSubtitle = 'Please enter product model to search for sensor info';
 }
 
-specSearchForm.addEventListener('submit', (e) => {
+specSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const productModel = document.getElementById('productModel').value.trim().toUpperCase();
@@ -43,67 +36,35 @@ specSearchForm.addEventListener('submit', (e) => {
     specLoading.style.display = 'block';
     resultCard.classList.remove('active');
 
-    // 使用 google.visualization.Query 進行查詢
-    // 這種方式會自動處理使用者的 Google 登入狀態 (Session)
-    const queryUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&range=${RANGE}`;
-    const query = new google.visualization.Query(queryUrl);
-
-    query.send((response) => {
-        specLoading.style.display = 'none';
-
-        if (response.isError()) {
-            console.error('Error in query: ' + response.getMessage() + ' ' + response.getDetailedMessage());
-            showGlobalAlert(currentLang === 'en' ? 
-                'Access Denied. Please ensure you are logged in to Google.' : 
-                '存取失敗。請確保您已登入 Google 帳號 (kevin.cheng@otophotonics.com) 並具備權限。');
-            return;
-        }
-
-        const data = response.getDataTable();
-        const numRows = data.getNumberOfRows();
+    try {
+        // 發送請求到 GAS 後端 (與 index.html 模式一致)
+        // 參數說明: 
+        // action=querySpec (告訴後端要執行規格查詢)
+        // modelCode, sensorCode (搜尋條件)
+        const url = `${GAS_WEB_APP_URL}?action=querySpec&modelCode=${encodeURIComponent(modelCode)}&sensorCode=${encodeURIComponent(sensorCode)}`;
         
-        let matchRow = null;
-        let modelMatched = false;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('連線失敗');
+        
+        const result = await response.json();
 
-        // 搜尋邏輯: 先匹配機型代碼，再向下搜尋感測器代碼
-        for (let i = 0; i < numRows; i++) {
-            const acValue = (data.getValue(i, 0) || "").toString().trim().toUpperCase();
-            
-            if (acValue === modelCode) {
-                modelMatched = true;
-                continue;
-            }
-
-            if (modelMatched) {
-                // 如果遇到下一個機型 (2碼純英文)，跳出區塊
-                if (acValue.length === 2 && /^[A-Z]+$/.test(acValue) && isNaN(acValue)) {
-                    modelMatched = false;
-                    continue;
-                }
-
-                const targetSensorInt = parseInt(sensorCode, 10);
-                const currentAcInt = parseInt(acValue, 10);
-
-                if (!isNaN(targetSensorInt) && !isNaN(currentAcInt) && targetSensorInt === currentAcInt) {
-                    // 找到匹配行，獲取 AC 與 AD 欄位
-                    matchRow = {
-                        ac: acValue,
-                        ad: data.getValue(i, 1) || ""
-                    };
-                    break;
-                }
-            }
-        }
-
-        if (matchRow) {
-            displayResult(modelCode, sensorCode, matchRow);
+        if (result.status === 'success' && result.data) {
+            displayResult(modelCode, sensorCode, result.data);
         } else {
-            showGlobalAlert(currentLang === 'en' ? `Sensor not found (${modelCode}-${sensorCode})` : `找不到對應感測器 (${modelCode}-${sensorCode})`);
+            showGlobalAlert(currentLang === 'en' ? 
+                (result.message || `Sensor not found (${modelCode}-${sensorCode})`) : 
+                (result.message || `找不到對應感測器 (${modelCode}-${sensorCode})`)
+            );
         }
-    });
+    } catch (err) {
+        console.error(err);
+        showGlobalAlert(currentLang === 'en' ? 'System Error: Cannot connect to GAS.' : '系統錯誤：無法連線至 Google Apps Script 後端。');
+    } finally {
+        specLoading.style.display = 'none';
+    }
 });
 
-function displayResult(modelCode, sensorCode, matchRow) {
+function displayResult(modelCode, sensorCode, data) {
     resultContent.innerHTML = `
         <div class="result-item">
             <span class="result-label">${currentLang === 'en' ? 'Model Code' : '機型代碼'}:</span>
@@ -114,12 +75,12 @@ function displayResult(modelCode, sensorCode, matchRow) {
             <span class="result-value">${sensorCode}</span>
         </div>
         <div class="result-item" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-bottom: 10px; padding-top: 10px;">
-            <span class="result-label">${currentLang === 'en' ? 'Sensor Info' : '感測器資訊'}:</span>
-            <span class="result-value" style="color: var(--primary); font-weight: 700;">${matchRow.ad || "符合資格"}</span>
+            <span class="result-label">${currentLang === 'en' ? 'Sensor Information' : '感測器資訊'}:</span>
+            <span class="result-value" style="color: var(--primary); font-weight: 700;">${data.sensorInfo || "符合資格"}</span>
         </div>
         <div class="result-item">
-             <span class="result-label">試算表欄位:</span>
-             <span class="result-value">AC=${matchRow.ac}, AD=${matchRow.ad}</span>
+             <span class="result-label">${currentLang === 'en' ? 'Sheet Row' : '試算表定位'}:</span>
+             <span class="result-value">Row ${data.rowNum || "N/A"} (AC=${data.acValue}, AD=${data.adValue})</span>
         </div>
     `;
     resultCard.classList.add('active');
