@@ -3,7 +3,7 @@
  * 該網址用於接收表單數據並處理 AI 聊天請求
  */
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
-//const GAS_WEB_APP_URL = 
+
 /**
  * --- 多國語言設定 (i18n) ---
  */
@@ -41,7 +41,24 @@ const i18n = {
         submitFail: '發生系統錯誤：',
         modalTitle: '系統提示',
         btnOk: '確定',
-        btnSpecLink: '波長範圍與解析度'
+        btnSpecLink: '波長範圍與解析度',
+        specTitle: '波長範圍與解析度',
+        specSubtitle: '請輸入產品型號以查詢對應的感測器資訊',
+        labelModel: '1. 產品型號',
+        labelStartW: '2. 起始波長 (nm)',
+        labelEndW: '3. 結束波長 (nm)',
+        labelReso: '4. 光學分辨率需求 (nm)',
+        phModel: '例如: SE2030',
+        phWave: '例如: 200',
+        phReso: '例如: 1.0',
+        btnSearch: '搜尋',
+        resHeader: '🔍 感測器查詢結果',
+        resModelCode: '機型代碼',
+        resSensorCode: '感測器代碼',
+        resSensorInfo: '感測器資訊',
+        resSheetLoc: '試算表定位',
+        btnBackHome: '返回主頁',
+        specLoading: '正在搜尋中，請稍候...'
     },
     'zh-CN': {
         pageTitle: '客户需求与问题登记',
@@ -63,14 +80,14 @@ const i18n = {
         optTech: '技术咨询',
         labelDesc: '问题描述',
         placeholderDesc: '请详细描述您的需求或遇到的问题...',
-        labelUpload: '附件上传 (可以上传文件或图档，最多 5 个附件)',
+        labelUpload: '附件上传 (可以上传文件或图档，最多 5 個附件)',
         uploadHint: '您可以选取多个附件进行上報，文件將自动存入云端案件文件夹',
         btnSubmit: '提交需求',
         chatTitle: 'AI 智能客服',
-        chatWelcome: '您好！我是您的智能助手。有任何关于技术规格或 FAQ 的问题都可以问我喔！',
+        chatWelcome: '您好！我是您的智能助手。有任何关于技术规格或 FAQ 的问题都可以問我喔！',
         chatPlaceholder: '请输入问题...',
         chatSend: '发送',
-        alertExceedLimit: '抱歉，每次提交最多仅限 5 个附件喔！',
+        alertExceedLimit: '抱歉，每次提交最多仅限 5 個附件喔！',
         btnSubmitting: '提交中...',
         submitSuccess: '需求提交成功！报告编号：',
         submitFail: '发生系统错误：',
@@ -92,7 +109,8 @@ const i18n = {
         resSensorCode: '感测器代码',
         resSensorInfo: '感测器信息',
         resSheetLoc: '试算表定位',
-        btnBackHome: '返回主页'
+        btnBackHome: '返回主页',
+        specLoading: '正在搜尋中，請稍候...'
     },
     'en': {
         pageTitle: 'Customer Requirement & Issue Log',
@@ -127,7 +145,24 @@ const i18n = {
         submitFail: 'System Error: ',
         modalTitle: 'System Alert',
         btnOk: 'OK',
-        btnSpecLink: 'Range & Resolution'
+        btnSpecLink: 'Range & Resolution',
+        specTitle: 'Range & Resolution',
+        specSubtitle: 'Please enter product model to search for sensor info',
+        labelModel: '1. Product Model',
+        labelStartW: '2. Start Wavelength (nm)',
+        labelEndW: '3. End Wavelength (nm)',
+        labelReso: '4. Resolution Req (nm)',
+        phModel: 'e.g. SE2030',
+        phWave: 'e.g. 200',
+        phReso: 'e.g. 1.0',
+        btnSearch: 'Search',
+        resHeader: '🔍 Sensor Search Result',
+        resModelCode: 'Model Code',
+        resSensorCode: 'Sensor Code',
+        resSensorInfo: 'Sensor Info',
+        resSheetLoc: 'Sheet Location',
+        btnBackHome: 'Back to Home',
+        specLoading: 'Searching, please wait...'
     }
 };
 
@@ -137,7 +172,6 @@ let selectedFiles = []; // 用於存放準備提交的檔案物件 [{name, data}
 /**
  * 切換語系函式
  */
-// 語系切換功能
 function setLanguage(lang) {
     currentLang = lang;
     
@@ -165,9 +199,9 @@ function setLanguage(lang) {
 
     // 切換按鈕激活狀態
     document.querySelectorAll('.oto-lang-btn').forEach(btn => btn.classList.remove('active'));
-    if (lang === 'zh-TW') document.getElementById('lang-tw').classList.add('active');
-    if (lang === 'zh-CN') document.getElementById('lang-cn').classList.add('active');
-    if (lang === 'en') document.getElementById('lang-en').classList.add('active');
+    if (lang === 'zh-TW' && document.getElementById('lang-zh-tw')) document.getElementById('lang-zh-tw').classList.add('active');
+    if (lang === 'zh-CN' && document.getElementById('lang-zh-cn')) document.getElementById('lang-zh-cn').classList.add('active');
+    if (lang === 'en' && document.getElementById('lang-en')) document.getElementById('lang-en').classList.add('active');
 }
 
 // 初始化
@@ -187,14 +221,14 @@ window.addEventListener('DOMContentLoaded', () => {
         setLanguage(lang);
     }
 });
+
+// 獲取 DOM 元素
+const regForm = document.getElementById('registrationForm');
+const aiChatWidget = document.getElementById('ai-chat-widget');
 const chatInput = document.getElementById('chat-input');
 const sendChat = document.getElementById('send-chat');
 const chatBody = document.getElementById('chat-body');
 const imagePreview = document.getElementById('image-preview');
-
-/**
- * 處理檔案選取與預覽
- */
 
 /**
  * 處理檔案選取與預覽
@@ -230,55 +264,54 @@ if (imageFilesInput) {
  * 渲染圖片預覽網格
  */
 function renderPreviews() {
+    if (!imagePreview) return;
     imagePreview.innerHTML = '';
     selectedFiles.forEach((file, index) => {
-        const item = document.createElement('div');
-        item.className = 'preview-item';
+        const div = document.createElement('div');
+        div.className = 'preview-item';
+        
+        // 如果是圖檔則顯示縮圖，否則顯示檔案圖示
+        if (file.data.startsWith('data:image')) {
+            div.innerHTML = `<img src="${file.data}" alt="preview">`;
+        } else {
+            div.innerHTML = `<div style="height:100%; display:flex; align-items:center; justify-content:center; color:#666;">📄</div>`;
+        }
 
-        // 判斷是否為圖片，若非圖片則顯示文件圖示
-        const isImage = file.data.startsWith('data:image/');
-        const previewContent = isImage 
-            ? `<img src="${file.data}" alt="${file.name}">`
-            : `<div class="file-icon-placeholder">📄<br><span class="file-name-hint">${file.name}</span></div>`;
+        // 刪除按鈕
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-file';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+        };
 
-        item.innerHTML = `
-            ${previewContent}
-            <button type="button" class="remove-btn" onclick="removeFile(${index})">×</button>
-        `;
-        imagePreview.appendChild(item);
+        div.appendChild(removeBtn);
+        imagePreview.appendChild(div);
     });
 }
 
 /**
- * 刪除已選取檔案
- */
-window.removeFile = (index) => {
-    selectedFiles.splice(index, 1);
-    renderPreviews();
-};
-
-/**
- * 1. 處理客戶需求表單提交
+ * 表單提交邏輯
  */
 if (regForm) {
     regForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        const loading = document.getElementById('loading');
+        loading.classList.remove('hidden');
 
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.innerText = i18n[currentLang].btnSubmitting;
-
-        // 彙整表單數據
+        // 收集表單數據
         const formData = {
-            companyName: regForm.companyName.value,
-            clientContact: regForm.clientContact.value,
-            email: regForm.email.value,
-            snsAccount: `${regForm.snsType.value}:${regForm.snsAccount.value}`,
-            productModel: regForm.productModel.value,
-            serialNumber: regForm.serialNumber.value,
-            reqType: regForm.reqType.value,
-            description: regForm.description.value,
-            files: selectedFiles // 使用我們管理的陣列
+            companyName: document.getElementById('companyName').value,
+            clientContact: document.getElementById('clientContact').value,
+            email: document.getElementById('email').value,
+            snsAccount: document.getElementById('snsAccount').value,
+            productModel: document.getElementById('productModel').value,
+            serialNumber: document.getElementById('serialNumber').value,
+            reqType: document.getElementById('reqType').value,
+            description: document.getElementById('description').value,
+            files: selectedFiles
         };
 
         try {
@@ -288,27 +321,39 @@ if (regForm) {
             });
 
             const result = await response.json();
+            loading.classList.add('hidden');
 
             if (result.result === 'success') {
-                showAlert(i18n[currentLang].submitSuccess + result.id);
+                showAlert(i18n[currentLang].alertSuccess + result.id);
                 regForm.reset();
-                selectedFiles = []; // 清空檔案陣列
+                selectedFiles = [];
                 renderPreviews();
             } else {
-                showAlert(i18n[currentLang].submitFail + (result.message || 'Error'));
+                showAlert(i18n[currentLang].alertError);
             }
-        } catch (err) {
-            showAlert(i18n[currentLang].submitFail + err.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = i18n[currentLang].btnSubmit;
+        } catch (error) {
+            console.error('Submission Error:', error);
+            loading.classList.add('hidden');
+            showAlert(i18n[currentLang].alertError);
         }
     });
 }
 
 /**
- * 2. AI 聊天室邏輯
+ * 專業彈窗邏輯
  */
+function showAlert(message) {
+    const modal = document.getElementById('custom-modal');
+    const modalMsg = document.getElementById('modal-message');
+    modalMsg.innerText = message;
+    modal.style.display = 'flex';
+}
+
+function closeModal() {
+    const modal = document.getElementById('custom-modal');
+    modal.style.display = 'none';
+}
+
 // 獲取開啟按鈕
 const chatToggleBtn = document.getElementById('chat-toggle-btn');
 
@@ -366,28 +411,4 @@ function addMessage(text, sender) {
     msgDiv.innerText = text;
     chatBody.appendChild(msgDiv);
     chatBody.scrollTop = chatBody.scrollHeight;
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-    const userLang = navigator.language || navigator.userLanguage;
-    let lang = 'en';
-    if (userLang.includes('zh-TW') || userLang.includes('zh-HK')) lang = 'zh-TW';
-    else if (userLang.includes('zh')) lang = 'zh-CN';
-    setLanguage(lang);
-});
-
-/**
- * 自訂彈窗顯示控制
- */
-function showAlert(message) {
-    if (!message) return; // ✅ 增加防呆：無訊息則不顯示
-    const modal = document.getElementById('custom-modal');
-    const msgEl = document.getElementById('modal-message');
-    msgEl.innerText = message;
-    modal.style.display = 'flex'; // ✅ 使用直接 style 控制更穩定
-}
-
-function closeModal() {
-    const modal = document.getElementById('custom-modal');
-    modal.style.display = 'none'; // ✅ 隱藏
 }
