@@ -4,8 +4,9 @@ const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
 // 診斷資訊 (可在瀏覽器主控台查看)
-console.log('Spec lookup initialized. GAS URL:', GAS_WEB_APP_URL ? 'Defined' : 'UNDEFINED');
-console.log('Current Language:', typeof currentLang !== 'undefined' ? currentLang : 'UNDEFINED');
+console.log('[Diagnostic] Spec lookup initialized.');
+console.log('[Diagnostic] Current Language:', typeof currentLang !== 'undefined' ? currentLang : 'UNDEFINED');
+console.log('[Diagnostic] GAS URL Prefix:', typeof GAS_WEB_APP_URL !== 'undefined' ? (GAS_WEB_APP_URL.substring(0, 20) + '...') : 'UNDEFINED');
 
 specSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
