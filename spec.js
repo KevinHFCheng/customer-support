@@ -42,8 +42,11 @@ specSearchForm.addEventListener('submit', async (e) => {
             );
         }
     } catch (err) {
-        console.error(err);
-        showGlobalAlert(currentLang === 'en' ? 'System Error: Cannot connect to GAS.' : '系統錯誤：無法連線至 Google Apps Script 後端。');
+        console.error('GAS Connection Error:', err);
+        const errorMsg = currentLang === 'en' ? 
+            `System Error: Cannot connect to GAS (${err.message})` : 
+            `系統錯誤：無法連線至 Google Apps Script 後端 (${err.message})`;
+        showGlobalAlert(errorMsg);
     } finally {
         specLoading.style.display = 'none';
     }
