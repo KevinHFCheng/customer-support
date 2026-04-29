@@ -90,7 +90,13 @@
                     </div>
                     <!-- 需求類型選擇 -->
                     <div class="form-group full-width">
-                        <label for="reqType" data-i18n="labelType">需求類型</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <label for="reqType" data-i18n="labelType" style="margin-bottom: 0;">需求類型</label>
+                            <a href="spec.html" class="spec-link-btn" style="text-decoration: none; font-size: 0.85rem; color: var(--primary); font-weight: 600; border: 1px solid var(--primary); padding: 5px 12px; border-radius: 8px; transition: all 0.3s; display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px;">🔍</span>
+                                <span data-i18n="btnSpecLink">波長範圍與解析度</span>
+                            </a>
+                        </div>
                         <select id="reqType" name="reqType" required>
                             <option value="" disabled selected data-i18n="optDefault">請選擇類型</option>
                             <option value="產品規格與選型" data-i18n="optSpec">產品規格與選型</option>

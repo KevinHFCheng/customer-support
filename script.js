@@ -40,7 +40,8 @@ const i18n = {
         submitSuccess: '需求提交成功！報告編號：',
         submitFail: '發生系統錯誤：',
         modalTitle: '系統提示',
-        btnOk: '確定'
+        btnOk: '確定',
+        btnSpecLink: '波長範圍與解析度'
     },
     'zh-CN': {
         pageTitle: '客户需求与问题登记',
@@ -74,7 +75,8 @@ const i18n = {
         submitSuccess: '需求提交成功！报告编号：',
         submitFail: '发生系统错误：',
         modalTitle: '系统提示',
-        btnOk: '确定'
+        btnOk: '确定',
+        btnSpecLink: '波长范围与解析度'
     },
     'en': {
         pageTitle: 'Customer Requirement & Issue Log',
@@ -108,7 +110,8 @@ const i18n = {
         submitSuccess: 'Form submitted successfully! ID: ',
         submitFail: 'System Error: ',
         modalTitle: 'System Alert',
-        btnOk: 'OK'
+        btnOk: 'OK',
+        btnSpecLink: 'Range & Resolution'
     }
 };
 
@@ -210,49 +213,51 @@ window.removeFile = (index) => {
 /**
  * 1. 處理客戶需求表單提交
  */
-regForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
+if (regForm) {
+    regForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-    const submitBtn = document.getElementById('submitBtn');
-    submitBtn.disabled = true;
-    submitBtn.innerText = i18n[currentLang].btnSubmitting;
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.innerText = i18n[currentLang].btnSubmitting;
 
-    // 彙整表單數據
-    const formData = {
-        companyName: regForm.companyName.value,
-        clientContact: regForm.clientContact.value,
-        email: regForm.email.value,
-        snsAccount: `${regForm.snsType.value}:${regForm.snsAccount.value}`,
-        productModel: regForm.productModel.value,
-        serialNumber: regForm.serialNumber.value,
-        reqType: regForm.reqType.value,
-        description: regForm.description.value,
-        files: selectedFiles // 使用我們管理的陣列
-    };
+        // 彙整表單數據
+        const formData = {
+            companyName: regForm.companyName.value,
+            clientContact: regForm.clientContact.value,
+            email: regForm.email.value,
+            snsAccount: `${regForm.snsType.value}:${regForm.snsAccount.value}`,
+            productModel: regForm.productModel.value,
+            serialNumber: regForm.serialNumber.value,
+            reqType: regForm.reqType.value,
+            description: regForm.description.value,
+            files: selectedFiles // 使用我們管理的陣列
+        };
 
-    try {
-        const response = await fetch(GAS_WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify(formData)
-        });
+        try {
+            const response = await fetch(GAS_WEB_APP_URL, {
+                method: 'POST',
+                body: JSON.stringify(formData)
+            });
 
-        const result = await response.json();
+            const result = await response.json();
 
-        if (result.result === 'success') {
-            showAlert(i18n[currentLang].submitSuccess + result.id);
-            regForm.reset();
-            selectedFiles = []; // 清空檔案陣列
-            renderPreviews();
-        } else {
-            showAlert(i18n[currentLang].submitFail + (result.message || 'Error'));
+            if (result.result === 'success') {
+                showAlert(i18n[currentLang].submitSuccess + result.id);
+                regForm.reset();
+                selectedFiles = []; // 清空檔案陣列
+                renderPreviews();
+            } else {
+                showAlert(i18n[currentLang].submitFail + (result.message || 'Error'));
+            }
+        } catch (err) {
+            showAlert(i18n[currentLang].submitFail + err.message);
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = i18n[currentLang].btnSubmit;
         }
-    } catch (err) {
-        showAlert(i18n[currentLang].submitFail + err.message);
-    } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = i18n[currentLang].btnSubmit;
-    }
-});
+    });
+}
 
 /**
  * 2. AI 聊天室邏輯
