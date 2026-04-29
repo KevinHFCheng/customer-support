@@ -269,23 +269,28 @@ if (regForm) {
 const chatToggleBtn = document.getElementById('chat-toggle-btn');
 
 // 點擊右下角 💬 按鈕開啟/關閉
-chatToggleBtn.onclick = () => {
-    aiChatWidget.classList.toggle('chat-closed');
-};
+if (chatToggleBtn && aiChatWidget) {
+    chatToggleBtn.onclick = () => {
+        aiChatWidget.classList.toggle('chat-closed');
+    };
+}
 
 // 點擊聊天視窗內部的關閉按鈕 (X)
-document.getElementById('close-chat').onclick = (e) => {
-    e.stopPropagation();
-    aiChatWidget.classList.add('chat-closed');
-};
+const closeChatBtn = document.getElementById('close-chat');
+if (closeChatBtn && aiChatWidget) {
+    closeChatBtn.onclick = (e) => {
+        e.stopPropagation();
+        aiChatWidget.classList.add('chat-closed');
+    };
+}
 
 // 傳送訊息邏輯
 const handleChatSubmit = async () => {
-    const query = chatInput.value.trim();
+    const query = chatInput ? chatInput.value.trim() : "";
     if (!query) return;
 
     addMessage(query, 'user');
-    chatInput.value = '';
+    if (chatInput) chatInput.value = '';
 
     try {
         // 發送請求到 GAS，帶上當前語系
@@ -299,14 +304,19 @@ const handleChatSubmit = async () => {
 };
 
 // 點擊傳送按鈕
-sendChat.onclick = handleChatSubmit;
+if (sendChat) {
+    sendChat.onclick = handleChatSubmit;
+}
 
 // 支援在輸入框按 Enter 鍵傳送
-chatInput.onkeypress = (e) => {
-    if (e.key === 'Enter') handleChatSubmit();
-};
+if (chatInput) {
+    chatInput.onkeypress = (e) => {
+        if (e.key === 'Enter') handleChatSubmit();
+    };
+}
 
 function addMessage(text, sender) {
+    if (!chatBody) return;
     const msgDiv = document.createElement('div');
     msgDiv.className = `message ${sender}`;
     msgDiv.innerText = text;
