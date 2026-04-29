@@ -76,7 +76,23 @@ const i18n = {
         submitFail: '发生系统错误：',
         modalTitle: '系统提示',
         btnOk: '确定',
-        btnSpecLink: '波长范围与解析度'
+        btnSpecLink: '波长范围与解析度',
+        specTitle: '波长范围与解析度',
+        specSubtitle: '请输入产品型号以查询对应的感測器信息',
+        labelModel: '1. 产品型号',
+        labelStartW: '2. 起始波长 (nm)',
+        labelEndW: '3. 结束波长 (nm)',
+        labelReso: '4. 光学分辨率需求 (nm)',
+        phModel: '例如: SE2030',
+        phWave: '例如: 200',
+        phReso: '例如: 1.0',
+        btnSearch: '搜尋',
+        resHeader: '🔍 感测器查询结果',
+        resModelCode: '机型代码',
+        resSensorCode: '感测器代码',
+        resSensorInfo: '感测器信息',
+        resSheetLoc: '试算表定位',
+        btnBackHome: '返回主页'
     },
     'en': {
         pageTitle: 'Customer Requirement & Issue Log',
@@ -121,28 +137,56 @@ let selectedFiles = []; // 用於存放準備提交的檔案物件 [{name, data}
 /**
  * 切換語系函式
  */
+// 語系切換功能
 function setLanguage(lang) {
     currentLang = lang;
+    
+    // 更新所有具有 data-i18n 屬性的元素文字
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
-        if (i18n[lang][key]) el.innerText = i18n[lang][key];
+        if (i18n[lang][key]) {
+            el.innerHTML = i18n[lang][key];
+        }
     });
 
+    // 更新 Placeholder
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
         const key = el.getAttribute('data-i18n-placeholder');
-        if (i18n[lang][key]) el.setAttribute('placeholder', i18n[lang][key]);
+        if (i18n[lang][key]) {
+            el.placeholder = i18n[lang][key];
+        }
     });
 
-    // 更新切換按鈕狀態 (配合 OtO 官網風格按鈕)
+    // 動態更新前往 spec.html 的連結，帶上語系參數
+    const specLink = document.getElementById('btn-spec-link');
+    if (specLink) {
+        specLink.href = `spec.html?lang=${lang}`;
+    }
+
+    // 切換按鈕激活狀態
     document.querySelectorAll('.oto-lang-btn').forEach(btn => btn.classList.remove('active'));
-    if (lang === 'zh-TW') document.getElementById('lang-zh-tw').classList.add('active');
-    if (lang === 'zh-CN') document.getElementById('lang-zh-cn').classList.add('active');
+    if (lang === 'zh-TW') document.getElementById('lang-tw').classList.add('active');
+    if (lang === 'zh-CN') document.getElementById('lang-cn').classList.add('active');
     if (lang === 'en') document.getElementById('lang-en').classList.add('active');
 }
 
-// 獲取 DOM 元素
-const regForm = document.getElementById('registrationForm');
-const aiChatWidget = document.getElementById('ai-chat-widget');
+// 初始化
+window.addEventListener('DOMContentLoaded', () => {
+    // 優先檢查 URL 參數中的 lang
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLang = urlParams.get('lang');
+    
+    if (urlLang && i18n[urlLang]) {
+        setLanguage(urlLang);
+    } else {
+        // 若無參數，則根據瀏覽器語系自動偵測
+        const userLang = navigator.language || navigator.userLanguage;
+        let lang = 'en';
+        if (userLang.includes('zh-TW') || userLang.includes('zh-HK')) lang = 'zh-TW';
+        else if (userLang.includes('zh')) lang = 'zh-CN';
+        setLanguage(lang);
+    }
+});
 const chatInput = document.getElementById('chat-input');
 const sendChat = document.getElementById('send-chat');
 const chatBody = document.getElementById('chat-body');

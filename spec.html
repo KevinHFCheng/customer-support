@@ -57,9 +57,9 @@
                 <img src="https://www.otophotonics.com/images/project/551/logo2.png" alt="OtO Photonics Logo" class="logo-img">
             </a>
             <div class="lang-switcher">
-                <a href="index.html" class="oto-lang-btn active">
+                <a href="index.html" id="btn-back-home" class="oto-lang-btn active">
                     <span class="icon-text">🔙</span>
-                    <span class="lang-text">返回主頁</span>
+                    <span class="lang-text" data-i18n="btnBackHome">返回主頁</span>
                 </a>
             </div>
         </div>
@@ -75,29 +75,29 @@
             <form id="specSearchForm">
                 <div class="form-grid">
                     <div class="form-group full-width">
-                        <label for="productModel">1. 產品型號</label>
-                        <input type="text" id="productModel" name="productModel" value="SE2030" required placeholder="例如: SE2030">
+                        <label for="productModel" data-i18n="labelModel">1. 產品型號</label>
+                        <input type="text" id="productModel" name="productModel" value="SE2030" required data-i18n-placeholder="phModel" placeholder="例如: SE2030">
                     </div>
                     <div class="form-group">
-                        <label for="startWavelength">2. 起始波長 (nm)</label>
-                        <input type="number" id="startWavelength" name="startWavelength" step="0.1" placeholder="例如: 200">
+                        <label for="startWavelength" data-i18n="labelStartW">2. 起始波長 (nm)</label>
+                        <input type="number" id="startWavelength" name="startWavelength" step="0.1" data-i18n-placeholder="phWave" placeholder="例如: 200">
                     </div>
                     <div class="form-group">
-                        <label for="endWavelength">3. 結束波長 (nm)</label>
-                        <input type="number" id="endWavelength" name="endWavelength" step="0.1" placeholder="例如: 850">
+                        <label for="endWavelength" data-i18n="labelEndW">3. 結束波長 (nm)</label>
+                        <input type="number" id="endWavelength" name="endWavelength" step="0.1" data-i18n-placeholder="phWave" placeholder="例如: 850">
                     </div>
                     <div class="form-group full-width">
-                        <label for="resolutionReq">4. 光學分辨率需求 (nm)</label>
-                        <input type="number" id="resolutionReq" name="resolutionReq" step="0.01" placeholder="例如: 1.0">
+                        <label for="resolutionReq" data-i18n="labelReso">4. 光學分辨率需求 (nm)</label>
+                        <input type="number" id="resolutionReq" name="resolutionReq" step="0.01" data-i18n-placeholder="phReso" placeholder="例如: 1.0">
                     </div>
                 </div>
-                <button type="submit" id="searchBtn" class="primary-btn">搜尋</button>
+                <button type="submit" id="searchBtn" class="primary-btn" data-i18n="btnSearch">搜尋</button>
             </form>
 
-            <div id="spec-loading">正在搜尋中，請稍候...</div>
+            <div id="spec-loading" data-i18n="specLoading">正在搜尋中，請稍候...</div>
 
             <div id="resultCard" class="result-card">
-                <div class="result-header">🔍 感測器查詢結果</div>
+                <div class="result-header" data-i18n="resHeader">🔍 感測器查詢結果</div>
                 <div id="resultContent">
                     <!-- 結果將由 JS 動態生成 -->
                 </div>

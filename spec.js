@@ -67,19 +67,19 @@ specSearchForm.addEventListener('submit', async (e) => {
 function displayResult(modelCode, sensorCode, data) {
     resultContent.innerHTML = `
         <div class="result-item">
-            <span class="result-label">${currentLang === 'en' ? 'Model Code' : '機型代碼'}:</span>
+            <span class="result-label">${i18n[currentLang].resModelCode}:</span>
             <span class="result-value">${modelCode}</span>
         </div>
         <div class="result-item">
-            <span class="result-label">${currentLang === 'en' ? 'Sensor Code' : '感測器代碼'}:</span>
+            <span class="result-label">${i18n[currentLang].resSensorCode}:</span>
             <span class="result-value">${sensorCode}</span>
         </div>
         <div class="result-item" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-bottom: 10px; padding-top: 10px;">
-            <span class="result-label">${currentLang === 'en' ? 'Sensor Information' : '感測器資訊'}:</span>
+            <span class="result-label">${i18n[currentLang].resSensorInfo}:</span>
             <span class="result-value" style="color: var(--primary); font-weight: 700;">${data.sensorInfo || "符合資格"}</span>
         </div>
         <div class="result-item">
-             <span class="result-label">${currentLang === 'en' ? 'Sheet Row' : '試算表定位'}:</span>
+             <span class="result-label">${i18n[currentLang].resSheetLoc}:</span>
              <span class="result-value">Row ${data.rowNum || "N/A"} (AC=${data.acValue}, AD=${data.adValue})</span>
         </div>
     `;
