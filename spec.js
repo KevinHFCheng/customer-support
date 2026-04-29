@@ -3,6 +3,10 @@ const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
+// 診斷資訊 (可在瀏覽器主控台查看)
+console.log('Spec lookup initialized. GAS URL:', GAS_WEB_APP_URL ? 'Defined' : 'UNDEFINED');
+console.log('Current Language:', typeof currentLang !== 'undefined' ? currentLang : 'UNDEFINED');
+
 specSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
