@@ -1,22 +1,7 @@
-/**
- * 波長範圍與解析度查詢邏輯 (spec.js)
- * 改為透過 Google Apps Script (GAS) 進行後端查詢，確保與 index.html 模式一致
- */
-
 const specSearchForm = document.getElementById('specSearchForm');
 const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
-
-// 增加 i18n 支援
-if (typeof i18n !== 'undefined') {
-    i18n['zh-TW'].specTitle = '波長範圍與解析度';
-    i18n['zh-TW'].specSubtitle = '請輸入產品型號以查詢對應的感測器資訊';
-    i18n['zh-CN'].specTitle = '波长范围与解析度';
-    i18n['zh-CN'].specSubtitle = '请输入 product 型号以查询对应的感測器信息';
-    i18n['en'].specTitle = 'Range & Resolution';
-    i18n['en'].specSubtitle = 'Please enter product model to search for sensor info';
-}
 
 specSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
