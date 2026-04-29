@@ -155,29 +155,32 @@ const imagePreview = document.getElementById('image-preview');
 /**
  * 處理檔案選取與預覽
  */
-document.getElementById('imageFiles').addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files);
+const imageFilesInput = document.getElementById('imageFiles');
+if (imageFilesInput) {
+    imageFilesInput.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files);
 
-    // 檢查加上新檔案後是否超過 5 張
-    if (selectedFiles.length + files.length > 5) {
-        showAlert(i18n[currentLang].alertExceedLimit);
-        e.target.value = ''; // 清空 input 以便下次觸發
-        return;
-    }
+        // 檢查加上新檔案後是否超過 5 張
+        if (selectedFiles.length + files.length > 5) {
+            showAlert(i18n[currentLang].alertExceedLimit);
+            e.target.value = ''; // 清空 input 以便下次觸發
+            return;
+        }
 
-    // 轉換為 Base64 並存入陣列
-    for (const file of files) {
-        const fileObj = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (ev) => resolve({ name: file.name, data: ev.target.result });
-            reader.readAsDataURL(file);
-        });
-        selectedFiles.push(fileObj);
-    }
+        // 轉換為 Base64 並存入陣列
+        for (const file of files) {
+            const fileObj = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => resolve({ name: file.name, data: ev.target.result });
+                reader.readAsDataURL(file);
+            });
+            selectedFiles.push(fileObj);
+        }
 
-    e.target.value = ''; // 重置 input
-    renderPreviews();
-});
+        e.target.value = ''; // 重置 input
+        renderPreviews();
+    });
+}
 
 /**
  * 渲染圖片預覽網格
