@@ -7,7 +7,7 @@ const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
-console.log('[Diagnostic] spec.js v1.8 loaded.');
+console.log('[Diagnostic] spec.js v1.9 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
@@ -72,7 +72,7 @@ if (specSearchForm) {
 }
 
 /**
- * 增強版解析：支援解析包含多組資料的字串
+ * 進階解析：掃描所有括號，找出包含規格參數 (AxB, C) 的那一組
  */
 function parseMultipleSensorData(info) {
     const sections = info.split(/------------------/);
@@ -80,22 +80,34 @@ function parseMultipleSensorData(info) {
     
     sections.forEach(sec => {
         try {
-            const parenMatch = sec.match(/\(([^)]+)\)/);
-            if (parenMatch) {
-                const content = parenMatch[1];
-                const sizeMatch = content.match(/(\d+)x/);
-                const countMatch = content.match(/,\s*(\d+)/);
-                
-                if (sizeMatch && countMatch) {
-                    const size = parseFloat(sizeMatch[1]);
-                    const count = parseFloat(countMatch[1]);
-                    results.push({
-                        length: ((size * count) / 1000).toFixed(3),
-                        pixels: count
-                    });
+            // 取得所有括號內容
+            const allParens = sec.match(/\(([^)]+)\)/g);
+            if (allParens) {
+                for (let p of allParens) {
+                    const content = p.replace(/[()]/g, '');
+                    const sizeMatch = content.match(/(\d+)x/);
+                    const countMatch = content.match(/,?\s*(\d+)/); // 寬鬆比對像素數量
+                    
+                    if (sizeMatch && countMatch) {
+                        // 針對 countMatch 做優化，避免抓到 50x250 中的 250
+                        // 邏輯：取第一個逗號後的數字
+                        const commaParts = content.split(',');
+                        if (commaParts.length > 1) {
+                            const pixelSize = parseFloat(sizeMatch[1]);
+                            const pixelCount = parseFloat(commaParts[1].match(/(\d+)/)[1]);
+                            results.push({
+                                length: ((pixelSize * pixelCount) / 1000).toFixed(3),
+                                pixels: pixelCount,
+                                rawLabel: sec.match(/【(.*?)】/)?.[1] || "Match"
+                            });
+                            break; // 找到正確的規格組後跳出
+                        }
+                    }
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            console.error('Parsing error in section:', e);
+        }
     });
     return results;
 }
@@ -109,17 +121,16 @@ function displayResult(modelCode, sensorCode, data) {
     
     let extraHtml = '';
     if (sensorResults.length > 0) {
-        // 如果有多組結果，以清單方式顯示
-        extraHtml = sensorResults.map((res, idx) => `
-            <div style="margin-top: 10px; padding: 10px; border: 1px dashed #ccc; border-radius: 6px; background: #fff;">
-                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Result #${idx + 1}</div>
-                <div class="result-item" style="border:none; padding:0; margin:0;">
-                    <span class="result-label">${dict.resSensorLength || '感測器長度'}:</span>
-                    <span class="result-value" style="color: #004494; font-weight: bold;">${res.length} mm</span>
+        extraHtml = sensorResults.map((res) => `
+            <div style="margin-top: 10px; padding: 12px; border: 1px solid #004494; border-left: 5px solid #004494; border-radius: 6px; background: #f0f7ff;">
+                <div style="font-size: 0.9em; color: #004494; font-weight: bold; margin-bottom: 8px;">🔹 ${res.rawLabel}</div>
+                <div class="result-item" style="border:none; padding:0; margin:0 0 5px 0;">
+                    <span class="result-label" style="font-size: 0.95em;">${dict.resSensorLength || '感測器長度'}:</span>
+                    <span class="result-value" style="color: #d9534f; font-weight: bold; font-size: 1.1em;">${res.length} mm</span>
                 </div>
                 <div class="result-item" style="border:none; padding:0; margin:0;">
-                    <span class="result-label">${dict.resPixels || '像素'}:</span>
-                    <span class="result-value" style="color: #004494; font-weight: bold;">${res.pixels}</span>
+                    <span class="result-label" style="font-size: 0.95em;">${dict.resPixels || '像素'}:</span>
+                    <span class="result-value" style="color: #333; font-weight: bold;">${res.pixels}</span>
                 </div>
             </div>
         `).join('');
@@ -135,9 +146,9 @@ function displayResult(modelCode, sensorCode, data) {
             <span class="result-value">${sensorCode}</span>
         </div>
         ${extraHtml}
-        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 15px;">
-            <span class="result-label">${dict.resSensorInfo || '感測器資訊'}:</span>
-            <span class="result-value" style="background: #f8f9fa; padding: 10px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">${data}</span>
+        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 20px;">
+            <span class="result-label" style="border-bottom: 2px solid #ddd; width: 100%; padding-bottom: 5px; margin-bottom: 5px;">${dict.resSensorInfo || '詳細感測器資訊'}:</span>
+            <span class="result-value" style="background: #f8f9fa; padding: 12px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.85em; color: #444; border: 1px solid #eee;">${data}</span>
         </div>
     `;
     resultCard.classList.add('active');
