@@ -1,14 +1,15 @@
-const specSearchForm = document.getElementById('specSearchForm');
-const resultCard = document.getElementById('resultCard');
-const resultContent = document.getElementById('resultContent');
-const specLoading = document.getElementById('spec-loading');
+// 確保在 DOM 與 script.js 載入後才執行
+window.addEventListener('DOMContentLoaded', () => {
+    const specSearchForm = document.getElementById('specSearchForm');
+    const resultCard = document.getElementById('resultCard');
+    const resultContent = document.getElementById('resultContent');
+    const specLoading = document.getElementById('spec-loading');
 
-// 診斷資訊 (可在瀏覽器主控台查看)
-console.log('[Diagnostic] Spec lookup initialized.');
-console.log('[Diagnostic] Current Language:', typeof currentLang !== 'undefined' ? currentLang : 'UNDEFINED');
-console.log('[Diagnostic] GAS URL Prefix:', typeof GAS_WEB_APP_URL !== 'undefined' ? (GAS_WEB_APP_URL.substring(0, 20) + '...') : 'UNDEFINED');
+    if (!specSearchForm) return;
 
-specSearchForm.addEventListener('submit', async (e) => {
+    console.log('[Diagnostic] Spec page ready. GAS URL:', GAS_WEB_APP_URL ? 'OK' : 'MISSING');
+
+    specSearchForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const productModel = document.getElementById('productModel').value.trim().toUpperCase();
