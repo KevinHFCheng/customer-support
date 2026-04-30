@@ -1,156 +1,270 @@
 /**
- * 波長範圍與解析度查詢邏輯 (spec.js)
+ * 波長範圍與解析度查詢邏輯 (spec.js v2.0)
  */
 
 const specSearchForm = document.getElementById('specSearchForm');
-const resultCard = document.getElementById('resultCard');
-const resultContent = document.getElementById('resultContent');
-const specLoading = document.getElementById('spec-loading');
+const resultCard     = document.getElementById('resultCard');
+const resultContent  = document.getElementById('resultContent');
+const specLoading    = document.getElementById('spec-loading');
+const searchBtn      = document.getElementById('searchBtn');
 
-console.log('[Diagnostic] spec.js v1.9 loaded.');
+console.log('[Diagnostic] spec.js v2.0 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
-        e.preventDefault(); 
+        e.preventDefault();
         console.log('[Diagnostic] Search submitted.');
 
         const productModel = document.getElementById('productModel').value.trim().toUpperCase();
-        
+
         if (productModel.length < 6) {
-            const errorMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
-                'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)';
-            if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
+            const msg = (typeof currentLang !== 'undefined' && currentLang === 'en')
+                ? 'Invalid format (e.g. SE2030)'
+                : '型號格式錯誤，需至少 6 碼 (例: SE2030)';
+            if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
             return;
         }
 
-        const sensorCode = productModel.substring(4, 6).substring(0, 1); 
+        const sensorCode      = productModel.substring(4, 5);
+        const startWavelength = document.getElementById('startWavelength').value.trim();
+        const endWavelength   = document.getElementById('endWavelength').value.trim();
+        const resolutionReq   = document.getElementById('resolutionReq').value.trim();
 
+        // UI: show loading
         specLoading.style.display = 'block';
         if (resultCard) resultCard.classList.remove('active');
+        if (searchBtn)  { searchBtn.disabled = true; searchBtn.textContent = '查詢中...'; }
 
         try {
             const baseUrl = (typeof GAS_WEB_APP_URL !== 'undefined') ? GAS_WEB_APP_URL.trim() : '';
-            
-            const params = new URLSearchParams({
+
+            // === Step 1: 查詢感測器資訊 ===
+            const params1 = new URLSearchParams({
                 action: 'querySpec',
                 productModel: productModel,
                 sensorCode: sensorCode,
                 lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
             });
-            
-            const url = `${baseUrl}?${params.toString()}`;
-            const response = await fetch(url, {
-                method: 'GET',
-                mode: 'cors',
-                cache: 'no-cache'
+            const res1 = await fetch(`${baseUrl}?${params1.toString()}`, {
+                method: 'GET', mode: 'cors', cache: 'no-cache'
             });
+            if (!res1.ok) throw new Error(`HTTP Error: ${res1.status}`);
+            const result1 = await res1.json();
 
-            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-            
-            const result = await response.json();
-
-            if (result.status === 'success' && result.data) {
-                const displayModel = productModel.substring(0, 2);
-                const displaySensor = Number(sensorCode).toString();
-                displayResult(displayModel, displaySensor, result.data);
-            } else {
-                const failMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
-                    (result.message || 'Sensor not found') : 
-                    (result.message || '找不到對應感測器資訊');
-                if (typeof showAlert === 'function') showAlert(failMsg); else alert(failMsg);
+            if (result1.status !== 'success' || !result1.data) {
+                const msg = result1.message || '找不到對應感測器資訊';
+                if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
+                return;
             }
+
+            const displayModel  = productModel.substring(0, 2);
+            const displaySensor = Number(sensorCode).toString();
+            const sensorResults = parseMultipleSensorData(result1.data);
+
+            // === Step 2 (optional): 查詢波長與解析度 ===
+            let result2 = null;
+            if (startWavelength && endWavelength && resolutionReq && sensorResults.length > 0) {
+                const sLength = sensorResults[0].length;
+                const sPixels = sensorResults[0].pixels;
+
+                const params2 = new URLSearchParams({
+                    action: 'queryWavelength',
+                    modelCode: displayModel,
+                    sensorLength: sLength,
+                    sensorPixels: sPixels,
+                    startWl: startWavelength,
+                    endWl: endWavelength,
+                    resolutionReq: resolutionReq,
+                    lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
+                });
+
+                try {
+                    const res2 = await fetch(`${baseUrl}?${params2.toString()}`, {
+                        method: 'GET', mode: 'cors', cache: 'no-cache'
+                    });
+                    result2 = await res2.json();
+                } catch (waveErr) {
+                    console.warn('Wave query failed:', waveErr);
+                }
+            }
+
+            displayResult(displayModel, displaySensor, result1.data, sensorResults, result2, resolutionReq);
+
         } catch (err) {
             console.error('GAS Connection Error:', err);
-            const errorMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
-                `System Error: (${err.message})` : 
-                `系統錯誤：(${err.message})`;
-            if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
+            const msg = (typeof currentLang !== 'undefined' && currentLang === 'en')
+                ? `System Error: (${err.message})`
+                : `系統錯誤：(${err.message})`;
+            if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
         } finally {
             specLoading.style.display = 'none';
+            if (searchBtn) { searchBtn.disabled = false; searchBtn.textContent = '搜尋'; }
         }
     });
 }
 
-/**
- * 進階解析：掃描所有括號，找出包含規格參數 (AxB, C) 的那一組
- */
+// ============================================================
+//  解析感測器資料
+// ============================================================
 function parseMultipleSensorData(info) {
     const sections = info.split(/------------------/);
-    const results = [];
-    
+    const results  = [];
+
     sections.forEach(sec => {
         try {
-            // 取得所有括號內容
             const allParens = sec.match(/\(([^)]+)\)/g);
-            if (allParens) {
-                for (let p of allParens) {
-                    const content = p.replace(/[()]/g, '');
-                    const sizeMatch = content.match(/(\d+)x/);
-                    const countMatch = content.match(/,?\s*(\d+)/); // 寬鬆比對像素數量
-                    
-                    if (sizeMatch && countMatch) {
-                        // 針對 countMatch 做優化，避免抓到 50x250 中的 250
-                        // 邏輯：取第一個逗號後的數字
-                        const commaParts = content.split(',');
-                        if (commaParts.length > 1) {
-                            const pixelSize = parseFloat(sizeMatch[1]);
-                            const pixelCount = parseFloat(commaParts[1].match(/(\d+)/)[1]);
-                            results.push({
-                                length: ((pixelSize * pixelCount) / 1000).toFixed(3),
-                                pixels: pixelCount,
-                                rawLabel: sec.match(/【(.*?)】/)?.[1] || "Match"
-                            });
-                            break; // 找到正確的規格組後跳出
-                        }
-                    }
+            if (!allParens) return;
+
+            for (let p of allParens) {
+                const content    = p.replace(/[()]/g, '');
+                const sizeMatch  = content.match(/(\d+)x/);
+                const commaParts = content.split(',');
+
+                if (sizeMatch && commaParts.length > 1) {
+                    const pixelMatch = commaParts[1].match(/(\d+)/);
+                    if (!pixelMatch) continue;
+
+                    const pixelSize  = parseFloat(sizeMatch[1]);
+                    const pixelCount = parseFloat(pixelMatch[1]);
+
+                    results.push({
+                        length:   ((pixelSize * pixelCount) / 1000).toFixed(3),
+                        pixels:   pixelCount,
+                        rawLabel: sec.match(/【(.*?)】/)?.[1] || 'Match'
+                    });
+                    break; // 取第一組有效規格即停止
                 }
             }
         } catch (e) {
-            console.error('Parsing error in section:', e);
+            console.error('Parsing error:', e);
         }
     });
+
     return results;
 }
 
-function displayResult(modelCode, sensorCode, data) {
+// ============================================================
+//  渲染結果
+// ============================================================
+function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelengthResult, resolutionReq) {
     if (!resultContent || !resultCard) return;
     const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh-TW';
     const dict = (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang] : {};
+    const reqVal = parseFloat(resolutionReq);
 
-    const sensorResults = parseMultipleSensorData(data);
-    
-    let extraHtml = '';
-    if (sensorResults.length > 0) {
-        extraHtml = sensorResults.map((res) => `
-            <div style="margin-top: 10px; padding: 12px; border: 1px solid #004494; border-left: 5px solid #004494; border-radius: 6px; background: #f0f7ff;">
-                <div style="font-size: 0.9em; color: #004494; font-weight: bold; margin-bottom: 8px;">🔹 ${res.rawLabel}</div>
-                <div class="result-item" style="border:none; padding:0; margin:0 0 5px 0;">
-                    <span class="result-label" style="font-size: 0.95em;">${dict.resSensorLength || '感測器長度'}:</span>
-                    <span class="result-value" style="color: #d9534f; font-weight: bold; font-size: 1.1em;">${res.length} mm</span>
-                </div>
-                <div class="result-item" style="border:none; padding:0; margin:0;">
-                    <span class="result-label" style="font-size: 0.95em;">${dict.resPixels || '像素'}:</span>
-                    <span class="result-value" style="color: #333; font-weight: bold;">${res.pixels}</span>
-                </div>
-            </div>
-        `).join('');
+    let html = '';
+
+    // ── Section 1: 感測器基本資訊 ──────────────────────────────
+    let sensorBodyHtml = `
+        <div class="info-row">
+            <span class="info-label">${dict.resModelCode  || '機型代碼'}</span>
+            <span class="info-value">${modelCode}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">${dict.resSensorCode || '感測器代碼'}</span>
+            <span class="info-value">${sensorCode}</span>
+        </div>`;
+
+    if (sensorResults && sensorResults.length > 0) {
+        sensorResults.forEach(res => {
+            sensorBodyHtml += `
+                <div style="margin-top:14px;">
+                    <div class="sensor-chip">${res.rawLabel}</div>
+                    <div class="info-row">
+                        <span class="info-label">${dict.resSensorLength || '感測器長度'}</span>
+                        <span class="info-value highlight">${res.length} mm</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">${dict.resPixels || '像素'}</span>
+                        <span class="info-value" style="font-family:'JetBrains Mono',monospace;font-weight:700;">${res.pixels.toLocaleString()} px</span>
+                    </div>
+                </div>`;
+        });
     }
 
-    resultContent.innerHTML = `
-        <div class="result-item">
-            <span class="result-label">${dict.resModelCode || '機型代碼'}:</span>
-            <span class="result-value">${modelCode}</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">${dict.resSensorCode || '感測器代碼'}:</span>
-            <span class="result-value">${sensorCode}</span>
-        </div>
-        ${extraHtml}
-        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 20px;">
-            <span class="result-label" style="border-bottom: 2px solid #ddd; width: 100%; padding-bottom: 5px; margin-bottom: 5px;">${dict.resSensorInfo || '詳細感測器資訊'}:</span>
-            <span class="result-value" style="background: #f8f9fa; padding: 12px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: 'Courier New', monospace; font-size: 0.85em; color: #444; border: 1px solid #eee;">${data}</span>
-        </div>
-    `;
+    html += `
+        <div class="result-section">
+            <div class="result-section-header blue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                感測器查詢結果
+            </div>
+            <div class="result-section-body">${sensorBodyHtml}</div>
+        </div>`;
+
+    // ── Section 2: 波段與解析度 ────────────────────────────────
+    if (wavelengthResult) {
+        if (wavelengthResult.status === 'success' && wavelengthResult.data && wavelengthResult.data.length > 0) {
+            let waveBands = '';
+            wavelengthResult.data.forEach(item => {
+                let rows = '';
+                item.slits.forEach(s => {
+                    const rv         = parseFloat(s.resolution);
+                    const isMeet     = !isNaN(rv) && !isNaN(reqVal) && rv <= reqVal;
+                    const cls        = isMeet ? 'res-meet' : 'res-normal';
+                    const badge      = isMeet ? '<span class="badge-meet">符合</span>' : '';
+                    rows += `
+                        <tr>
+                            <td>${s.slit}</td>
+                            <td><span class="${cls}">${s.resolution} nm</span>${badge}</td>
+                        </tr>`;
+                });
+
+                waveBands += `
+                    <div class="waveband-block">
+                        <div class="waveband-title">
+                            波段：${item.waveband}
+                            <span class="grating-tag">${item.grating}</span>
+                        </div>
+                        <table class="slit-table">
+                            <thead>
+                                <tr>
+                                    <th>狹縫 (Slit)</th>
+                                    <th>光學解析度 (Resolution)</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
+            });
+
+            html += `
+                <div class="result-section">
+                    <div class="result-section-header green">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        滿足波長條件的波段與解析度
+                    </div>
+                    <div class="result-section-body">${waveBands}</div>
+                </div>`;
+        } else {
+            html += `
+                <div class="result-section">
+                    <div class="result-section-header amber">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        波段查詢提示
+                    </div>
+                    <div class="result-section-body">
+                        <div class="notice-block warn">
+                            <span class="notice-icon">⚠</span>
+                            <span>${wavelengthResult.message || '在波長範圍內查無符合的波段與解析度資料'}</span>
+                        </div>
+                    </div>
+                </div>`;
+        }
+    }
+
+    // ── Section 3: 感測器原始資訊 ──────────────────────────────
+    html += `
+        <div class="result-section">
+            <div class="result-section-header blue">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                ${dict.resSensorInfo || '感測器原始資訊'}
+            </div>
+            <div class="result-section-body">
+                <div class="raw-info-block">${rawData}</div>
+            </div>
+        </div>`;
+
+    resultContent.innerHTML = html;
     resultCard.classList.add('active');
-    resultCard.scrollIntoView({ behavior: 'smooth' });
+    resultCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
