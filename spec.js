@@ -10,38 +10,49 @@ window.addEventListener('DOMContentLoaded', () => {
     console.log('[Diagnostic] Spec page ready. GAS URL:', GAS_WEB_APP_URL ? 'OK' : 'MISSING');
 
     specSearchForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const productModel = document.getElementById('productModel').value.trim().toUpperCase();
-    
-    // 邏輯拆解: SE2030 -> Model Code: SE, Sensor Code: 03
-    const modelCode = productModel.substring(0, 2);
-    const digitsPart = productModel.substring(2, 6);
-    const sensorCode = digitsPart.substring(1, 3); 
-
-    if (!modelCode || sensorCode.length !== 2 || isNaN(sensorCode)) {
-        showGlobalAlert(currentLang === 'en' ? 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)');
-        return;
-    }
-
-    specLoading.style.display = 'block';
-    resultCard.classList.remove('active');
-
-    try {
-        // 發送請求到 GAS 後端 (與 index.html 模式一致)
-        // 參數說明: 
-        // action=querySpec (告訴後端要執行規格查詢)
-        // modelCode, sensorCode (搜尋條件)
-        const url = `${GAS_WEB_APP_URL}?action=querySpec&modelCode=${encodeURIComponent(modelCode)}&sensorCode=${encodeURIComponent(sensorCode)}`;
+        e.preventDefault();
         
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('連線失敗');
+        const productModel = document.getElementById('productModel').value.trim().toUpperCase();
         
-        const result = await response.json();
+        // 邏輯拆解: SE2030 -> Model Code: SE, Sensor Code: 03
+        const modelCode = productModel.substring(0, 2);
+        const digitsPart = productModel.substring(2, 6);
+        const sensorCode = digitsPart.substring(1, 3); 
 
-        if (result.status === 'success' && result.data) {
-            displayResult(modelCode, sensorCode, result.data);
-        } else {
+        if (!modelCode || sensorCode.length !== 2 || isNaN(sensorCode)) {
+            showGlobalAlert(currentLang === 'en' ? 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)');
+            return;
+        }
+
+        specLoading.style.display = 'block';
+        resultCard.classList.remove('active');
+
+        try {
+            // 清理網址並組合參數
+            const baseUrl = GAS_WEB_APP_URL.trim();
+            const params = new URLSearchParams({
+                action: 'querySpec',
+                modelCode: modelCode,
+                sensorCode: sensorCode,
+                lang: currentLang
+            });
+            const url = `${baseUrl}?${params.toString()}`;
+            
+            console.log('[Diagnostic] Fetching Spec from GAS...');
+            
+            const response = await fetch(url, {
+                method: 'GET',
+                mode: 'cors',
+                cache: 'no-cache'
+            });
+
+            if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+            
+            const result = await response.json();
+
+            if (result.status === 'success' && result.data) {
+                displayResult(modelCode, sensorCode, result.data);
+            } else {
             showGlobalAlert(currentLang === 'en' ? 
                 (result.message || `Sensor not found (${modelCode}-${sensorCode})`) : 
                 (result.message || `找不到對應感測器 (${modelCode}-${sensorCode})`)
