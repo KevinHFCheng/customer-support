@@ -1,17 +1,20 @@
-// 確保在 DOM 與 script.js 載入後才執行
-window.addEventListener('DOMContentLoaded', () => {
-    const specSearchForm = document.getElementById('specSearchForm');
-    const resultCard = document.getElementById('resultCard');
-    const resultContent = document.getElementById('resultContent');
-    const specLoading = document.getElementById('spec-loading');
+/**
+ * 波長範圍與解析度查詢邏輯 (spec.js)
+ */
 
-    if (!specSearchForm) return;
+// 直接抓取元素，因為腳本已放在 body 底部
+const specSearchForm = document.getElementById('specSearchForm');
+const resultCard = document.getElementById('resultCard');
+const resultContent = document.getElementById('resultContent');
+const specLoading = document.getElementById('spec-loading');
 
-    console.log('[Diagnostic] Spec page ready. GAS URL:', GAS_WEB_APP_URL ? 'OK' : 'MISSING');
+console.log('[Diagnostic] spec.js loaded. GAS URL:', typeof GAS_WEB_APP_URL !== 'undefined' ? 'OK' : 'MISSING');
 
+if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
+        e.preventDefault(); // 強制攔截表單跳轉
+        console.log('[Diagnostic] Search button clicked.');
+
         const productModel = document.getElementById('productModel').value.trim().toUpperCase();
         
         // 邏輯拆解: SE2030 -> Model Code: SE, Sensor Code: 03
@@ -20,7 +23,8 @@ window.addEventListener('DOMContentLoaded', () => {
         const sensorCode = digitsPart.substring(1, 3); 
 
         if (!modelCode || sensorCode.length !== 2 || isNaN(sensorCode)) {
-            showGlobalAlert(currentLang === 'en' ? 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)');
+            const errorMsg = currentLang === 'en' ? 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)';
+            if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
             return;
         }
 
@@ -28,7 +32,6 @@ window.addEventListener('DOMContentLoaded', () => {
         resultCard.classList.remove('active');
 
         try {
-            // 清理網址並組合參數
             const baseUrl = GAS_WEB_APP_URL.trim();
             const params = new URLSearchParams({
                 action: 'querySpec',
@@ -38,7 +41,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
             const url = `${baseUrl}?${params.toString()}`;
             
-            console.log('[Diagnostic] Fetching Spec from GAS...');
+            console.log('[Diagnostic] Fetching from:', url.substring(0, 50) + '...');
             
             const response = await fetch(url, {
                 method: 'GET',
@@ -53,51 +56,43 @@ window.addEventListener('DOMContentLoaded', () => {
             if (result.status === 'success' && result.data) {
                 displayResult(modelCode, sensorCode, result.data);
             } else {
-            showGlobalAlert(currentLang === 'en' ? 
-                (result.message || `Sensor not found (${modelCode}-${sensorCode})`) : 
-                (result.message || `找不到對應感測器 (${modelCode}-${sensorCode})`)
-            );
+                const failMsg = currentLang === 'en' ? 
+                    (result.message || `Sensor not found (${modelCode}-${sensorCode})`) : 
+                    (result.message || `找不到對應感測器 (${modelCode}-${sensorCode})`);
+                if (typeof showAlert === 'function') showAlert(failMsg); else alert(failMsg);
+            }
+        } catch (err) {
+            console.error('GAS Connection Error:', err);
+            const errorMsg = currentLang === 'en' ? 
+                `System Error: Cannot connect to GAS (${err.message})` : 
+                `系統錯誤：無法連線至 Google Apps Script 後端 (${err.message})`;
+            if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
+        } finally {
+            specLoading.style.display = 'none';
         }
-    } catch (err) {
-        console.error('GAS Connection Error:', err);
-        const errorMsg = currentLang === 'en' ? 
-            `System Error: Cannot connect to GAS (${err.message})` : 
-            `系統錯誤：無法連線至 Google Apps Script 後端 (${err.message})`;
-        showGlobalAlert(errorMsg);
-    } finally {
-        specLoading.style.display = 'none';
-    }
-});
+    });
+}
 
 function displayResult(modelCode, sensorCode, data) {
+    if (!resultContent || !resultCard) return;
+    
+    // 從 script.js 的 i18n 獲取翻譯，若無則使用預設值
+    const dict = i18n[currentLang] || i18n['zh-TW'];
+
     resultContent.innerHTML = `
         <div class="result-item">
-            <span class="result-label">${i18n[currentLang].resModelCode}:</span>
+            <span class="result-label">${dict.resModelCode || '機型代碼'}:</span>
             <span class="result-value">${modelCode}</span>
         </div>
         <div class="result-item">
-            <span class="result-label">${i18n[currentLang].resSensorCode}:</span>
+            <span class="result-label">${dict.resSensorCode || '感測器代碼'}:</span>
             <span class="result-value">${sensorCode}</span>
         </div>
-        <div class="result-item" style="margin-top: 15px; border-top: 1px dashed #ccc; padding-bottom: 10px; padding-top: 10px;">
-            <span class="result-label">${i18n[currentLang].resSensorInfo}:</span>
-            <span class="result-value" style="color: var(--primary); font-weight: 700;">${data.sensorInfo || "符合資格"}</span>
-        </div>
-        <div class="result-item">
-             <span class="result-label">${i18n[currentLang].resSheetLoc}:</span>
-             <span class="result-value">Row ${data.rowNum || "N/A"} (AC=${data.acValue}, AD=${data.adValue})</span>
+        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+            <span class="result-label">${dict.resSensorInfo || '感測器資訊'}:</span>
+            <span class="result-value" style="background: #f8f9fa; padding: 10px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: monospace;">${data}</span>
         </div>
     `;
     resultCard.classList.add('active');
-}
-
-/**
- * 統一呼叫 script.js 的 showAlert
- */
-function showGlobalAlert(msg) {
-    if (typeof showAlert === 'function') {
-        showAlert(msg);
-    } else {
-        alert(msg);
-    }
+    resultCard.scrollIntoView({ behavior: 'smooth' });
 }
