@@ -62,8 +62,9 @@ if (specSearchForm) {
             const sensorResults = parseMultipleSensorData(result1.data);
 
             // === Step 2 (optional): 查詢波長與解析度 ===
+            // 只要有起始/結束波長就觸發，resolutionReq 為選填
             let result2 = null;
-            if (startWavelength && endWavelength && resolutionReq && sensorResults.length > 0) {
+            if (startWavelength && endWavelength && sensorResults.length > 0) {
                 const sLength = sensorResults[0].length;
                 const sPixels = sensorResults[0].pixels;
 
