@@ -7,7 +7,7 @@ const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
-console.log('[Diagnostic] spec.js v1.5 loaded.');
+console.log('[Diagnostic] spec.js v1.6 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
@@ -74,12 +74,11 @@ if (specSearchForm) {
 }
 
 /**
- * 解析感測器長度
- * 格式範例: (14x200, 2048) -> 14 * 2048 / 1000 = 28.672
+ * 解析感測器數據
+ * 回傳: { length: "28.672", pixels: "2048" }
  */
-function calculateSensorLength(info) {
+function parseSensorData(info) {
     try {
-        // 尋找括號內的內容
         const parenMatch = info.match(/\(([^)]+)\)/);
         if (!parenMatch) return null;
         
@@ -87,17 +86,20 @@ function calculateSensorLength(info) {
         
         // 1. 尋找像素大小 (第一個數字x...)
         const sizeMatch = content.match(/(\d+)x/);
-        // 2. 尋找像素數量 (逗號後的數字，可能是單純數字或 NxM 格式)
+        // 2. 尋找像素數量 (逗號後的數字)
         const countMatch = content.match(/,\s*(\d+)/);
         
         if (sizeMatch && countMatch) {
             const size = parseFloat(sizeMatch[1]);
             const count = parseFloat(countMatch[1]);
             const length = (size * count) / 1000;
-            return length.toFixed(3); // 保留三位小數
+            return {
+                length: length.toFixed(3),
+                pixels: count
+            };
         }
     } catch (e) {
-        console.error('Error parsing sensor length:', e);
+        console.error('Error parsing sensor data:', e);
     }
     return null;
 }
@@ -107,13 +109,21 @@ function displayResult(modelCode, sensorCode, data) {
     const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh-TW';
     const dict = (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang] : {};
 
-    const sensorLength = calculateSensorLength(data);
-    const lengthHtml = sensorLength ? `
-        <div class="result-item">
-            <span class="result-label">${dict.resSensorLength || '感測器長度'}:</span>
-            <span class="result-value" style="color: #004494; font-weight: bold;">${sensorLength} mm</span>
-        </div>
-    ` : '';
+    const sensorData = parseSensorData(data);
+    
+    let extraHtml = '';
+    if (sensorData) {
+        extraHtml = `
+            <div class="result-item">
+                <span class="result-label">${dict.resSensorLength || '感測器長度'}:</span>
+                <span class="result-value" style="color: #004494; font-weight: bold;">${sensorData.length} mm</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">${dict.resPixels || '像素'}:</span>
+                <span class="result-value" style="color: #004494; font-weight: bold;">${sensorData.pixels}</span>
+            </div>
+        `;
+    }
 
     resultContent.innerHTML = `
         <div class="result-item">
@@ -124,7 +134,7 @@ function displayResult(modelCode, sensorCode, data) {
             <span class="result-label">${dict.resSensorCode || '感測器代碼'}:</span>
             <span class="result-value">${sensorCode}</span>
         </div>
-        ${lengthHtml}
+        ${extraHtml}
         <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px;">
             <span class="result-label">${dict.resSensorInfo || '感測器資訊'}:</span>
             <span class="result-value" style="background: #f8f9fa; padding: 10px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: monospace;">${data}</span>
