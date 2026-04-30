@@ -64,6 +64,8 @@ if (specSearchForm) {
             // === Step 2 (optional): 查詢波長與解析度 ===
             // 只要有起始/結束波長就觸發，resolutionReq 為選填
             let result2 = null;
+            console.log('[Wave] Condition check - startWavelength:', startWavelength, 'endWavelength:', endWavelength, 'sensorResults.length:', sensorResults.length);
+            
             if (startWavelength && endWavelength && sensorResults.length > 0) {
                 const sLength = sensorResults[0].length;
                 const sPixels = sensorResults[0].pixels;
@@ -79,14 +81,23 @@ if (specSearchForm) {
                     lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
                 });
 
+                const waveUrl = `${baseUrl}?${params2.toString()}`;
+                console.log('[Wave] Calling URL:', waveUrl);
+
                 try {
-                    const res2 = await fetch(`${baseUrl}?${params2.toString()}`, {
+                    const res2 = await fetch(waveUrl, {
                         method: 'GET', mode: 'cors', cache: 'no-cache'
                     });
-                    result2 = await res2.json();
+                    const rawText = await res2.text();
+                    console.log('[Wave] Raw response text:', rawText);
+                    result2 = JSON.parse(rawText);
+                    console.log('[Wave] Parsed result2:', result2);
                 } catch (waveErr) {
-                    console.warn('Wave query failed:', waveErr);
+                    console.error('[Wave] Query failed:', waveErr);
+                    result2 = { status: 'error', message: '前端連線錯誤: ' + waveErr.message };
                 }
+            } else {
+                console.log('[Wave] Condition NOT met - skipping wavelength query.');
             }
 
             displayResult(displayModel, displaySensor, result1.data, sensorResults, result2, resolutionReq);
