@@ -8,7 +8,7 @@ const resultContent  = document.getElementById('resultContent');
 const specLoading    = document.getElementById('spec-loading');
 const searchBtn      = document.getElementById('searchBtn');
 
-console.log('[Diagnostic] spec.js v2.0 loaded.');
+console.log('[Diagnostic] spec.js v2.1 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
