@@ -7,7 +7,7 @@ const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
-console.log('[Diagnostic] spec.js v1.7 loaded.');
+console.log('[Diagnostic] spec.js v1.8 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
@@ -16,7 +16,6 @@ if (specSearchForm) {
 
         const productModel = document.getElementById('productModel').value.trim().toUpperCase();
         
-        // 基本格式檢查
         if (productModel.length < 6) {
             const errorMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
                 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)';
@@ -24,7 +23,6 @@ if (specSearchForm) {
             return;
         }
 
-        // 解析感測器代碼 (最後兩位的前一位)
         const sensorCode = productModel.substring(4, 6).substring(0, 1); 
 
         specLoading.style.display = 'block';
@@ -35,7 +33,7 @@ if (specSearchForm) {
             
             const params = new URLSearchParams({
                 action: 'querySpec',
-                productModel: productModel, // 傳送完整型號以供系列判斷
+                productModel: productModel,
                 sensorCode: sensorCode,
                 lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
             });
@@ -52,7 +50,6 @@ if (specSearchForm) {
             const result = await response.json();
 
             if (result.status === 'success' && result.data) {
-                // 拆解顯示用的代碼
                 const displayModel = productModel.substring(0, 2);
                 const displaySensor = Number(sensorCode).toString();
                 displayResult(displayModel, displaySensor, result.data);
@@ -75,30 +72,32 @@ if (specSearchForm) {
 }
 
 /**
- * 解析感測器數據
+ * 增強版解析：支援解析包含多組資料的字串
  */
-function parseSensorData(info) {
-    try {
-        const parenMatch = info.match(/\(([^)]+)\)/);
-        if (!parenMatch) return null;
-        
-        const content = parenMatch[1];
-        const sizeMatch = content.match(/(\d+)x/);
-        const countMatch = content.match(/,\s*(\d+)/);
-        
-        if (sizeMatch && countMatch) {
-            const size = parseFloat(sizeMatch[1]);
-            const count = parseFloat(countMatch[1]);
-            const length = (size * count) / 1000;
-            return {
-                length: length.toFixed(3),
-                pixels: count
-            };
-        }
-    } catch (e) {
-        console.error('Error parsing sensor data:', e);
-    }
-    return null;
+function parseMultipleSensorData(info) {
+    const sections = info.split(/------------------/);
+    const results = [];
+    
+    sections.forEach(sec => {
+        try {
+            const parenMatch = sec.match(/\(([^)]+)\)/);
+            if (parenMatch) {
+                const content = parenMatch[1];
+                const sizeMatch = content.match(/(\d+)x/);
+                const countMatch = content.match(/,\s*(\d+)/);
+                
+                if (sizeMatch && countMatch) {
+                    const size = parseFloat(sizeMatch[1]);
+                    const count = parseFloat(countMatch[1]);
+                    results.push({
+                        length: ((size * count) / 1000).toFixed(3),
+                        pixels: count
+                    });
+                }
+            }
+        } catch (e) {}
+    });
+    return results;
 }
 
 function displayResult(modelCode, sensorCode, data) {
@@ -106,20 +105,24 @@ function displayResult(modelCode, sensorCode, data) {
     const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh-TW';
     const dict = (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang] : {};
 
-    const sensorData = parseSensorData(data);
+    const sensorResults = parseMultipleSensorData(data);
     
     let extraHtml = '';
-    if (sensorData) {
-        extraHtml = `
-            <div class="result-item">
-                <span class="result-label">${dict.resSensorLength || '感測器長度'}:</span>
-                <span class="result-value" style="color: #004494; font-weight: bold;">${sensorData.length} mm</span>
+    if (sensorResults.length > 0) {
+        // 如果有多組結果，以清單方式顯示
+        extraHtml = sensorResults.map((res, idx) => `
+            <div style="margin-top: 10px; padding: 10px; border: 1px dashed #ccc; border-radius: 6px; background: #fff;">
+                <div style="font-size: 0.85em; color: #666; margin-bottom: 5px;">Result #${idx + 1}</div>
+                <div class="result-item" style="border:none; padding:0; margin:0;">
+                    <span class="result-label">${dict.resSensorLength || '感測器長度'}:</span>
+                    <span class="result-value" style="color: #004494; font-weight: bold;">${res.length} mm</span>
+                </div>
+                <div class="result-item" style="border:none; padding:0; margin:0;">
+                    <span class="result-label">${dict.resPixels || '像素'}:</span>
+                    <span class="result-value" style="color: #004494; font-weight: bold;">${res.pixels}</span>
+                </div>
             </div>
-            <div class="result-item">
-                <span class="result-label">${dict.resPixels || '像素'}:</span>
-                <span class="result-value" style="color: #004494; font-weight: bold;">${sensorData.pixels}</span>
-            </div>
-        `;
+        `).join('');
     }
 
     resultContent.innerHTML = `
@@ -132,9 +135,9 @@ function displayResult(modelCode, sensorCode, data) {
             <span class="result-value">${sensorCode}</span>
         </div>
         ${extraHtml}
-        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px;">
+        <div class="result-item" style="flex-direction: column; align-items: flex-start; gap: 5px; margin-top: 15px;">
             <span class="result-label">${dict.resSensorInfo || '感測器資訊'}:</span>
-            <span class="result-value" style="background: #f8f9fa; padding: 10px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: monospace;">${data}</span>
+            <span class="result-value" style="background: #f8f9fa; padding: 10px; border-radius: 8px; width: 100%; white-space: pre-wrap; font-family: monospace; font-size: 0.9em;">${data}</span>
         </div>
     `;
     resultCard.classList.add('active');
