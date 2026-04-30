@@ -7,7 +7,7 @@ const resultCard = document.getElementById('resultCard');
 const resultContent = document.getElementById('resultContent');
 const specLoading = document.getElementById('spec-loading');
 
-console.log('[Diagnostic] spec.js v1.6 loaded.');
+console.log('[Diagnostic] spec.js v1.7 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
@@ -15,29 +15,27 @@ if (specSearchForm) {
         console.log('[Diagnostic] Search submitted.');
 
         const productModel = document.getElementById('productModel').value.trim().toUpperCase();
-        const modelCode = productModel.substring(0, 2);
-        const digitsPart = productModel.substring(2, 6);
-        const sensorCode = digitsPart.substring(1, 3); 
-
-        if (!modelCode || sensorCode.length !== 2 || isNaN(sensorCode)) {
+        
+        // 基本格式檢查
+        if (productModel.length < 6) {
             const errorMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
                 'Invalid format (e.g. SE2030)' : '型號格式錯誤 (例: SE2030)';
             if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
             return;
         }
 
+        // 解析感測器代碼 (最後兩位的前一位)
+        const sensorCode = productModel.substring(4, 6).substring(0, 1); 
+
         specLoading.style.display = 'block';
         if (resultCard) resultCard.classList.remove('active');
 
         try {
             const baseUrl = (typeof GAS_WEB_APP_URL !== 'undefined') ? GAS_WEB_APP_URL.trim() : '';
-            if (!baseUrl || baseUrl.includes('PLACEHOLDER')) {
-                throw new Error('GAS URL not configured');
-            }
-
+            
             const params = new URLSearchParams({
                 action: 'querySpec',
-                modelCode: modelCode,
+                productModel: productModel, // 傳送完整型號以供系列判斷
                 sensorCode: sensorCode,
                 lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
             });
@@ -54,18 +52,21 @@ if (specSearchForm) {
             const result = await response.json();
 
             if (result.status === 'success' && result.data) {
-                displayResult(modelCode, sensorCode, result.data);
+                // 拆解顯示用的代碼
+                const displayModel = productModel.substring(0, 2);
+                const displaySensor = Number(sensorCode).toString();
+                displayResult(displayModel, displaySensor, result.data);
             } else {
                 const failMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
-                    (result.message || `Sensor not found (${modelCode}-${sensorCode})`) : 
-                    (result.message || `找不到對應感測器 (${modelCode}-${sensorCode})`);
+                    (result.message || 'Sensor not found') : 
+                    (result.message || '找不到對應感測器資訊');
                 if (typeof showAlert === 'function') showAlert(failMsg); else alert(failMsg);
             }
         } catch (err) {
             console.error('GAS Connection Error:', err);
             const errorMsg = (typeof currentLang !== 'undefined' && currentLang === 'en') ? 
-                `System Error: Cannot connect to GAS (${err.message})` : 
-                `系統錯誤：無法連線至 Google Apps Script 後端 (${err.message})`;
+                `System Error: (${err.message})` : 
+                `系統錯誤：(${err.message})`;
             if (typeof showAlert === 'function') showAlert(errorMsg); else alert(errorMsg);
         } finally {
             specLoading.style.display = 'none';
@@ -75,7 +76,6 @@ if (specSearchForm) {
 
 /**
  * 解析感測器數據
- * 回傳: { length: "28.672", pixels: "2048" }
  */
 function parseSensorData(info) {
     try {
@@ -83,10 +83,7 @@ function parseSensorData(info) {
         if (!parenMatch) return null;
         
         const content = parenMatch[1];
-        
-        // 1. 尋找像素大小 (第一個數字x...)
         const sizeMatch = content.match(/(\d+)x/);
-        // 2. 尋找像素數量 (逗號後的數字)
         const countMatch = content.match(/,\s*(\d+)/);
         
         if (sizeMatch && countMatch) {
