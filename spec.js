@@ -62,21 +62,21 @@ if (specSearchForm) {
             const sensorResults = parseMultipleSensorData(result1.data);
 
             // === Step 2 (optional): 查詢波長與解析度 ===
-            // 只要有起始/結束波長就觸發，resolutionReq 為選填
+            // 只要有起始/結束波長就觸發，RB/SB 機種則強制觸發
             let result2 = null;
-            console.log('[Wave] Condition check - startWavelength:', startWavelength, 'endWavelength:', endWavelength, 'sensorResults.length:', sensorResults.length);
             
-            if (startWavelength && endWavelength && sensorResults.length > 0) {
-                const sLength = sensorResults[0].length;
-                const sPixels = sensorResults[0].pixels;
+            if ((startWavelength && endWavelength && sensorResults.length > 0) || displayModel === 'RB' || displayModel === 'SB') {
+                // 對於 RB/SB，如果沒有 sensorResults，則給予預設值 0
+                const sLength = sensorResults.length > 0 ? sensorResults[0].length : 0;
+                const sPixels = sensorResults.length > 0 ? sensorResults[0].pixels : 0;
 
                 const params2 = new URLSearchParams({
                     action: 'queryWavelength',
                     modelCode: displayModel,
                     sensorLength: sLength,
                     sensorPixels: sPixels,
-                    startWl: startWavelength,
-                    endWl: endWavelength,
+                    startWl: startWavelength || 0,
+                    endWl: endWavelength || 0,
                     resolutionReq: resolutionReq,
                     lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
                 });
