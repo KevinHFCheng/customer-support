@@ -208,18 +208,18 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
         if (wavelengthResult.status === 'success' && wavelengthResult.data && wavelengthResult.data.length > 0) {
             let waveBands = '';
             wavelengthResult.data.forEach(item => {
-                let rows = '';
-                item.slits.forEach(s => {
+                
+                // 產生狹縫標題列
+                let slitHeaders = item.slits.map(s => `<th>${s.slit}</th>`).join('');
+                
+                // 產生解析度數值列
+                let resCells = item.slits.map(s => {
                     const rv         = parseFloat(s.resolution);
                     const isMeet     = !isNaN(rv) && !isNaN(reqVal) && rv <= reqVal;
                     const cls        = isMeet ? 'res-meet' : 'res-normal';
-                    const badge      = isMeet ? '<span class="badge-meet">符合</span>' : '';
-                    rows += `
-                        <tr>
-                            <td>${s.slit}</td>
-                            <td><span class="${cls}">${s.resolution} nm</span>${badge}</td>
-                        </tr>`;
-                });
+                    const badge      = isMeet ? '<div style="margin-top:4px;"><span class="badge-meet">符合</span></div>' : '';
+                    return `<td><span class="${cls}">${s.resolution} nm</span>${badge}</td>`;
+                }).join('');
 
                 waveBands += `
                     <div class="waveband-block">
@@ -227,15 +227,22 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                             波段：${item.waveband}
                             <span class="grating-tag">${item.grating}</span>
                         </div>
-                        <table class="slit-table">
-                            <thead>
-                                <tr>
-                                    <th>狹縫 (Slit)</th>
-                                    <th>光學解析度 (Resolution)</th>
-                                </tr>
-                            </thead>
-                            <tbody>${rows}</tbody>
-                        </table>
+                        <div style="overflow-x: auto;">
+                            <table class="slit-table" style="white-space: nowrap;">
+                                <thead>
+                                    <tr>
+                                        <th>狹縫 (Slit)</th>
+                                        ${slitHeaders}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="font-weight: 600;">光學解析度<br>(Resolution)</td>
+                                        ${resCells}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>`;
             });
 
