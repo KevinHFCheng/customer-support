@@ -235,7 +235,6 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                     <tr>
                         <td style="font-weight: 600; text-align: center;">${rawBand} <br><span class="grating-tag" style="margin-top:4px;">${item.grating}</span></td>
                         <td style="text-align: center;">${range}</td>
-                        <td style="font-weight: 600; text-align: center;">光學解析度<br>(Resolution)</td>
                         ${resCells}
                     </tr>`;
             });
@@ -248,7 +247,6 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                                 <tr>
                                     <th>波段名</th>
                                     <th>波段範圍</th>
-                                    <th>狹縫 (Slit)</th>
                                     ${slitHeaders}
                                 </tr>
                             </thead>
