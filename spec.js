@@ -210,7 +210,35 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
 
     // ── Section 2: 波段與解析度 ────────────────────────────────
     if (wavelengthResult) {
-        if (wavelengthResult.status === 'success' && wavelengthResult.data && wavelengthResult.data.length > 0) {
+        if (wavelengthResult.status === 'full_table') {
+            let tableData = wavelengthResult.data;
+            let tableRows = '';
+            
+            tableData.forEach((row, index) => {
+                let rowHtml = row.map(cell => `<td>${cell !== undefined && cell !== null ? cell : ''}</td>`).join('');
+                if (index === 0) {
+                    tableRows += `<thead><tr>${row.map(cell => `<th>${cell !== undefined && cell !== null ? cell : ''}</th>`).join('')}</tr></thead><tbody>`;
+                } else {
+                    tableRows += `<tr>${rowHtml}</tr>`;
+                }
+            });
+            tableRows += `</tbody>`;
+
+            html += `
+                <div class="result-section">
+                    <div class="result-section-header green">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                        規格表完整資料
+                    </div>
+                    <div class="result-section-body" style="padding: 0; border: none; background: transparent;">
+                        <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
+                            <table class="slit-table" style="white-space: nowrap; width: 100%;">
+                                ${tableRows}
+                            </table>
+                        </div>
+                    </div>
+                </div>`;
+        } else if (wavelengthResult.status === 'success' && wavelengthResult.data && wavelengthResult.data.length > 0) {
             let slitHeaders = "";
             if (wavelengthResult.data[0] && wavelengthResult.data[0].slits) {
                 slitHeaders = wavelengthResult.data[0].slits.map(s => `<th>${s.slit}</th>`).join('');
