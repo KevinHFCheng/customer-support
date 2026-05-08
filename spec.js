@@ -211,13 +211,15 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
     // ── Section 2: 波段與解析度 ────────────────────────────────
     if (wavelengthResult) {
         if (wavelengthResult.status === 'success' && wavelengthResult.data && wavelengthResult.data.length > 0) {
-            let waveBands = '';
+            let slitHeaders = "";
+            if (wavelengthResult.data[0] && wavelengthResult.data[0].slits) {
+                slitHeaders = wavelengthResult.data[0].slits.map(s => `<th>${s.slit}</th>`).join('');
+            } else {
+                slitHeaders = `<th>10um</th><th>25um</th><th>50um</th><th>100um</th><th>200um</th>`;
+            }
+
+            let tableRows = '';
             wavelengthResult.data.forEach(item => {
-                
-                // 產生狹縫標題列
-                let slitHeaders = item.slits.map(s => `<th>${s.slit}</th>`).join('');
-                
-                // 產生解析度數值列
                 let resCells = item.slits.map(s => {
                     const rv         = parseFloat(s.resolution);
                     const isMeet     = !isNaN(rv) && !isNaN(reqVal) && rv <= reqVal;
@@ -226,30 +228,36 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                     return `<td><span class="${cls}">${s.resolution} nm</span>${badge}</td>`;
                 }).join('');
 
-                waveBands += `
-                    <div class="waveband-block">
-                        <div class="waveband-title">
-                            波段：${item.waveband}
-                            <span class="grating-tag">${item.grating}</span>
-                        </div>
-                        <div style="overflow-x: auto;">
-                            <table class="slit-table" style="white-space: nowrap;">
-                                <thead>
-                                    <tr>
-                                        <th>狹縫 (Slit)</th>
-                                        ${slitHeaders}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="font-weight: 600;">光學解析度<br>(Resolution)</td>
-                                        ${resCells}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>`;
+                let rawBand = item.rawBandName || item.waveband.split(" (")[0];
+                let range = item.bandRange || item.waveband.replace(rawBand, "").trim();
+                
+                tableRows += `
+                    <tr>
+                        <td style="font-weight: 600; text-align: center;">${rawBand} <br><span class="grating-tag" style="margin-top:4px;">${item.grating}</span></td>
+                        <td style="text-align: center;">${range}</td>
+                        <td style="font-weight: 600; text-align: center;">光學解析度<br>(Resolution)</td>
+                        ${resCells}
+                    </tr>`;
             });
+
+            let waveBands = `
+                <div class="waveband-block" style="padding: 0; border: none; background: transparent;">
+                    <div style="overflow-x: auto;">
+                        <table class="slit-table" style="white-space: nowrap; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>波段名</th>
+                                    <th>波段範圍</th>
+                                    <th>狹縫 (Slit)</th>
+                                    ${slitHeaders}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${tableRows}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
 
             html += `
                 <div class="result-section">
