@@ -179,6 +179,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
 
     if (sensorResults && sensorResults.length > 0) {
         sensorResults.forEach(res => {
+            const pixelSize = Math.round((parseFloat(res.length) * 1000) / parseFloat(res.pixels));
             sensorBodyHtml += `
                 <div style="margin-top:14px;">
                     <div class="sensor-chip">${res.rawLabel}</div>
@@ -189,6 +190,10 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                     <div class="info-row">
                         <span class="info-label">${dict.resPixels || '像素'}</span>
                         <span class="info-value" style="font-family:'JetBrains Mono',monospace;font-weight:700;">${res.pixels.toLocaleString()} px</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">像素大小</span>
+                        <span class="info-value">${pixelSize} um</span>
                     </div>
                 </div>`;
         });
