@@ -28,7 +28,8 @@ if (specSearchForm) {
         const sensorCode      = productModel.substring(4, 5);
         const startWavelength = document.getElementById('startWavelength').value.trim();
         const endWavelength   = document.getElementById('endWavelength').value.trim();
-        const resolutionReq   = document.getElementById('resolutionReq').value.trim();
+        const resolutionReqEl = document.getElementById('resolutionReq');
+        const resolutionReq   = resolutionReqEl ? resolutionReqEl.value.trim() : '';
 
         // UI: show loading
         specLoading.style.display = 'block';
