@@ -264,8 +264,8 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                 
                 tableRows += `
                     <tr>
-                        <td style="font-weight: 600; text-align: center;">${rawBand} <br><span class="grating-tag" style="margin-top:4px;">${item.grating}</span></td>
-                        <td style="text-align: center;">${range}</td>
+                        <td style="font-weight: 600; text-align: center; vertical-align: middle;">${rawBand}</td>
+                        <td style="text-align: center; vertical-align: middle;">${range}</td>
                         ${resCells}
                     </tr>`;
             });
