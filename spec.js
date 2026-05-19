@@ -304,6 +304,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                         <div class="notice-block warn">
                             <span class="notice-icon">⚠</span>
                             <span>${wavelengthResult.message || '在波長範圍內查無符合的波段與解析度資料'}</span>
+                            ${wavelengthResult.debugLogs ? '<br><br><div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #666; background: #fff3cd; padding: 10px; border-radius: 4px; text-align: left; max-height: 200px; overflow-y: auto;"><b>[Debug Logs]</b><br>' + wavelengthResult.debugLogs.join('<br>') + '</div>' : ''}
                         </div>
                     </div>
                 </div>`;
