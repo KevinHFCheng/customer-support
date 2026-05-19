@@ -166,7 +166,8 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
 
     let html = '';
 
-    // ── Section 1: 感測器基本資訊 ──────────────────────────────
+    // ── Section 1: 感測器基本資訊 (配合需求暫不顯示感測器結果與資訊) ──────────────────────────────
+    /* 
     let sensorBodyHtml = `
         <div class="info-row">
             <span class="info-label">${dict.resModelCode  || '機型代碼'}</span>
@@ -207,6 +208,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
             </div>
             <div class="result-section-body">${sensorBodyHtml}</div>
         </div>`;
+    */
 
     // ── Section 2: 波段與解析度 ────────────────────────────────
     if (wavelengthResult) {
