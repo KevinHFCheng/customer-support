@@ -314,7 +314,8 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
         }
     }
 
-    // ── Section 3: 感測器原始資訊 ──────────────────────────────
+    // ── Section 3: 感測器原始資訊 (配合需求暫不顯示) ──────────────────────────────
+    /*
     html += `
         <div class="result-section">
             <div class="result-section-header blue">
@@ -325,6 +326,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                 <div class="raw-info-block">${rawData}</div>
             </div>
         </div>`;
+    */
 
     resultContent.innerHTML = html;
     resultCard.classList.add('active');
