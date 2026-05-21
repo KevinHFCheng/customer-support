@@ -28,7 +28,7 @@
 - **Google Apps Script (GAS)**：充當中間層 API，處理資料寫入、Drive 資料夾建立與檔案上傳。
 - **Google Sheets**：作為主資料庫儲存所有客戶案件。
 - **Google Drive**：用於存放每個案件專屬的子資料夾與客戶上傳的截圖檔案。
-- **Gemini 1.5 Flash API**：提供聊天室底層 AI 邏輯。
+- **Gemini 3.5 Flash / 2.5 Flash API**：提供聊天室底層 AI 邏輯，並具備自動模型降級與 stable v1 端點容錯機制。
 
 ---
 
