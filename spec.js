@@ -16,11 +16,11 @@ if (specSearchForm) {
         console.log('[Diagnostic] Search submitted.');
 
         const productModel = document.getElementById('productModel').value.trim().toUpperCase();
+        const lang = (typeof currentLang !== 'undefined') ? currentLang : 'zh-TW';
+        const dict = (typeof i18n !== 'undefined' && i18n[lang]) ? i18n[lang] : {};
 
         if (productModel.length < 6) {
-            const msg = (typeof currentLang !== 'undefined' && currentLang === 'en')
-                ? 'Invalid format (e.g. SE2030)'
-                : '型號格式錯誤，需至少 6 碼 (例: SE2030)';
+            const msg = dict.errModelFormat || '型號格式錯誤，需至少 6 碼（例：SE2030）';
             if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
             return;
         }
@@ -34,7 +34,10 @@ if (specSearchForm) {
         // UI: show loading
         specLoading.style.display = 'block';
         if (resultCard) resultCard.classList.remove('active');
-        if (searchBtn)  { searchBtn.disabled = true; searchBtn.textContent = '查詢中...'; }
+        if (searchBtn)  { 
+            searchBtn.disabled = true; 
+            searchBtn.textContent = dict.btnSearching || '查詢中...'; 
+        }
 
         try {
             const baseUrl = (typeof GAS_WEB_APP_URL !== 'undefined') ? GAS_WEB_APP_URL.trim() : '';
@@ -44,7 +47,7 @@ if (specSearchForm) {
                 action: 'querySpec',
                 productModel: productModel,
                 sensorCode: sensorCode,
-                lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
+                lang: lang
             });
             const res1 = await fetch(`${baseUrl}?${params1.toString()}`, {
                 method: 'GET', mode: 'cors', cache: 'no-cache'
@@ -53,7 +56,7 @@ if (specSearchForm) {
             const result1 = await res1.json();
 
             if (result1.status !== 'success' || !result1.data) {
-                const msg = result1.message || '找不到對應感測器資訊';
+                const msg = result1.message || dict.errNoSensor || '找不到對應感測器資訊';
                 if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
                 return;
             }
@@ -79,7 +82,7 @@ if (specSearchForm) {
                     startWl: startWavelength || 0,
                     endWl: endWavelength || 0,
                     resolutionReq: resolutionReq,
-                    lang: (typeof currentLang !== 'undefined' ? currentLang : 'zh-TW')
+                    lang: lang
                 });
 
                 const waveUrl = `${baseUrl}?${params2.toString()}`;
@@ -105,13 +108,15 @@ if (specSearchForm) {
 
         } catch (err) {
             console.error('GAS Connection Error:', err);
-            const msg = (typeof currentLang !== 'undefined' && currentLang === 'en')
-                ? `System Error: (${err.message})`
-                : `系統錯誤：(${err.message})`;
+            const errPrefix = dict.errSystem || '系統錯誤：';
+            const msg = `${errPrefix}(${err.message})`;
             if (typeof showAlert === 'function') showAlert(msg); else alert(msg);
         } finally {
             specLoading.style.display = 'none';
-            if (searchBtn) { searchBtn.disabled = false; searchBtn.textContent = '搜尋'; }
+            if (searchBtn) { 
+                searchBtn.disabled = false; 
+                searchBtn.textContent = dict.btnSearch || '搜尋'; 
+            }
         }
     });
 }
@@ -231,7 +236,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                 <div class="result-section">
                     <div class="result-section-header green">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        規格表完整資料
+                        ${dict.specResultFullTable || '規格表完整資料'}
                     </div>
                     <div class="result-section-body" style="padding: 0; border: none; background: transparent;">
                         <div style="overflow-x: auto; max-height: 600px; overflow-y: auto;">
@@ -255,7 +260,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                     const rv         = parseFloat(s.resolution);
                     const isMeet     = !isNaN(rv) && !isNaN(reqVal) && rv <= reqVal;
                     const cls        = isMeet ? 'res-meet' : 'res-normal';
-                    const badge      = isMeet ? '<div style="margin-top:4px;"><span class="badge-meet">符合</span></div>' : '';
+                    const badge      = isMeet ? `<div style="margin-top:4px;"><span class="badge-meet">${dict.specMeetBadge || '符合'}</span></div>` : '';
                     return `<td><span class="${cls}">${s.resolution} nm</span>${badge}</td>`;
                 }).join('');
 
@@ -276,8 +281,8 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                         <table class="slit-table" style="white-space: nowrap; width: 100%;">
                             <thead>
                                 <tr>
-                                    <th>波段名</th>
-                                    <th>波段範圍</th>
+                                    <th>${dict.specTableBandName || '波段名'}</th>
+                                    <th>${dict.specTableBandRange || '波段範圍'}</th>
                                     ${slitHeaders}
                                 </tr>
                             </thead>
@@ -292,7 +297,7 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                 <div class="result-section">
                     <div class="result-section-header green">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                        滿足波長條件的波段與解析度
+                        ${dict.specResultMeet || '滿足波長條件的波段與解析度'}
                     </div>
                     <div class="result-section-body">${waveBands}</div>
                 </div>`;
@@ -301,12 +306,12 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                 <div class="result-section">
                     <div class="result-section-header amber">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        波段查詢提示
+                        ${dict.specResultHint || '波段查詢提示'}
                     </div>
                     <div class="result-section-body">
                         <div class="notice-block warn">
                             <span class="notice-icon">⚠</span>
-                            <span>${wavelengthResult.message || '在波長範圍內查無符合的波段與解析度資料'}</span>
+                            <span>${dict.specNoData || '在波長範圍內查無符合的波段與解析度資料'}</span>
                             ${wavelengthResult.debugLogs ? '<br><br><div style="font-family: monospace; font-size: 12px; line-height: 1.4; color: #666; background: #fff3cd; padding: 10px; border-radius: 4px; text-align: left; max-height: 200px; overflow-y: auto;"><b>[Debug Logs]</b><br>' + wavelengthResult.debugLogs.join('<br>') + '</div>' : ''}
                         </div>
                     </div>
