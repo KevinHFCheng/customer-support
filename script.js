@@ -1,9 +1,11 @@
 /**
  * 客戶需求與問題登記系統 - 主要邏輯腳本 (script.js)
- * 版本號: v2.6.0
+ * 版本號: v2.7.0
  * 更新日期: 2026-07-02
  * 功能說明: 前端表單提交、圖片轉碼、AI 智能客服對話介面。
- * 變更紀錄: 新增語系欄位傳遞、對話歷史儲存（最近 3 次對話）以支援上下文記憶。
+ * 變更紀錄: 
+ *   1. 新增語系欄位傳遞、對話歷史儲存（最近 3 次對話）以支援上下文記憶。
+ *   2. 新增唯一 Session ID 生成與傳遞以支援對話日誌關聯優化。
  */
 
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
@@ -225,6 +227,13 @@ let currentLang = 'zh-TW';
 let selectedFiles = [];
 let chatHistory = [];
 
+// 取得或生成唯一的 Session ID
+let sessionId = sessionStorage.getItem('oto_chat_session_id');
+if (!sessionId) {
+    sessionId = 'sess_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+    sessionStorage.setItem('oto_chat_session_id', sessionId);
+}
+
 function setLanguage(lang) {
     if (!i18n[lang]) return;
     currentLang = lang;
@@ -380,7 +389,7 @@ const handleChatSubmit = async () => {
     if (chatInput) chatInput.value = '';
     try {
         const historyParam = encodeURIComponent(JSON.stringify(chatHistory));
-        const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}&history=${historyParam}`);
+        const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}&history=${historyParam}&sessionId=${sessionId}`);
         const result = await response.json();
         addMessage(result.answer, 'bot');
         
