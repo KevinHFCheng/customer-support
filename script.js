@@ -1,5 +1,9 @@
 /**
  * 客戶需求與問題登記系統 - 主要邏輯腳本 (script.js)
+ * 版本號: v2.6.0
+ * 更新日期: 2026-07-02
+ * 功能說明: 前端表單提交、圖片轉碼、AI 智能客服對話介面。
+ * 變更紀錄: 新增語系欄位傳遞、對話歷史儲存（最近 3 次對話）以支援上下文記憶。
  */
 
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
@@ -219,6 +223,7 @@ const i18n = {
 
 let currentLang = 'zh-TW';
 let selectedFiles = [];
+let chatHistory = [];
 
 function setLanguage(lang) {
     if (!i18n[lang]) return;
@@ -327,7 +332,8 @@ if (regForm) {
             serialNumber: document.getElementById('serialNumber').value,
             reqType: document.getElementById('reqType').value,
             description: document.getElementById('description').value,
-            files: selectedFiles
+            files: selectedFiles,
+            lang: currentLang
         };
         try {
             const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', body: JSON.stringify(formData) });
@@ -373,9 +379,17 @@ const handleChatSubmit = async () => {
     addMessage(query, 'user');
     if (chatInput) chatInput.value = '';
     try {
-        const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}`);
+        const historyParam = encodeURIComponent(JSON.stringify(chatHistory));
+        const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}&history=${historyParam}`);
         const result = await response.json();
         addMessage(result.answer, 'bot');
+        
+        // 更新歷史紀錄，僅保留最近 3 次對話（3 個 user + 3 個 model/bot，共 6 筆）
+        chatHistory.push({ role: 'user', text: query });
+        chatHistory.push({ role: 'model', text: result.answer });
+        if (chatHistory.length > 6) {
+            chatHistory = chatHistory.slice(-6);
+        }
     } catch (err) {
         addMessage(i18n[currentLang].chatError || 'Service Error', 'bot');
     }
