@@ -293,13 +293,19 @@ function displayResult(modelCode, sensorCode, rawData, sensorResults, wavelength
                     </div>
                 </div>`;
 
+            let approxNotice = wavelengthResult.isApproximate ? `
+                <div class="notice-block warn" style="margin-bottom: 14px;">
+                    <span class="notice-icon">⚠</span>
+                    <span>${dict.specApproxNotice || '查無完全符合波長範圍的波段，以下為最接近的搜尋結果'}</span>
+                </div>` : '';
+
             html += `
                 <div class="result-section">
                     <div class="result-section-header green">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                         ${dict.specResultMeet || '滿足波長條件的波段與解析度'}
                     </div>
-                    <div class="result-section-body">${waveBands}</div>
+                    <div class="result-section-body">${approxNotice}${waveBands}</div>
                 </div>`;
         } else {
             html += `
