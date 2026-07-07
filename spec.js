@@ -1,5 +1,10 @@
 /**
- * 波長範圍與解析度查詢邏輯 (spec.js v2.0)
+ * 波長範圍與解析度查詢邏輯 (spec.js)
+ * 版本號: v2.2
+ * 更新日期: 2026-07-07
+ * 功能說明: 依產品型號查詢感測器資訊，並依起訖波長比對波段與解析度。
+ * 變更紀錄:
+ *   1. 顯示邏輯新增 isApproximate 提示區塊：當容差內查無符合波段時，標示目前結果為最接近的近似結果。
  */
 
 const specSearchForm = document.getElementById('specSearchForm');
@@ -8,7 +13,7 @@ const resultContent  = document.getElementById('resultContent');
 const specLoading    = document.getElementById('spec-loading');
 const searchBtn      = document.getElementById('searchBtn');
 
-console.log('[Diagnostic] spec.js v2.1 loaded.');
+console.log('[Diagnostic] spec.js v2.2 loaded.');
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
