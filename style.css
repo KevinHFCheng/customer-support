@@ -269,7 +269,8 @@ input:focus, select:focus, textarea:focus {
     position: fixed; 
     bottom: 100px; 
     right: 30px; 
-    width: 350px; 
+    width: 700px; 
+    max-width: calc(100vw - 40px);
     height: 500px; 
     background: white; 
     border-radius: 15px; 
