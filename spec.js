@@ -1,10 +1,11 @@
 /**
  * 波長範圍與解析度查詢邏輯 (spec.js)
- * 版本號: v2.2
- * 更新日期: 2026-07-07
+ * 版本號: v2.3
+ * 更新日期: 2026-08-27
  * 功能說明: 依產品型號查詢感測器資訊，並依起訖波長比對波段與解析度。
  * 變更紀錄:
  *   1. 顯示邏輯新增 isApproximate 提示區塊：當容差內查無符合波段時，標示目前結果為最接近的近似結果。
+ *   2. 頁面載入時自動呼叫 GAS getVersion，將版本號顯示於 Hero 區域的 badge。
  */
 
 const specSearchForm = document.getElementById('specSearchForm');
@@ -13,7 +14,28 @@ const resultContent  = document.getElementById('resultContent');
 const specLoading    = document.getElementById('spec-loading');
 const searchBtn      = document.getElementById('searchBtn');
 
-console.log('[Diagnostic] spec.js v2.2 loaded.');
+console.log('[Diagnostic] spec.js v2.3 loaded.');
+
+// ============================================================
+//  GAS 版本查詢 (頁面載入時執行)
+// ============================================================
+async function fetchGasVersion() {
+    try {
+        const baseUrl = (typeof GAS_WEB_APP_URL !== 'undefined') ? GAS_WEB_APP_URL.trim() : '';
+        if (!baseUrl) return;
+        const res  = await fetch(`${baseUrl}?action=getVersion`, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+        const data = await res.json();
+        const badge = document.getElementById('gas-version-badge');
+        if (badge && data.version) {
+            badge.textContent = `GAS Backend ${data.version}`;
+            badge.style.color = 'rgba(255,255,255,0.45)';
+        }
+    } catch (e) {
+        const badge = document.getElementById('gas-version-badge');
+        if (badge) { badge.textContent = 'GAS 離線'; badge.style.color = 'rgba(255,100,100,0.6)'; }
+    }
+}
+document.addEventListener('DOMContentLoaded', fetchGasVersion);
 
 if (specSearchForm) {
     specSearchForm.addEventListener('submit', async (e) => {
