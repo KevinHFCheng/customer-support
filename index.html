@@ -117,6 +117,11 @@
                         <small id="file-count-msg" style="color: #666; margin-top: 5px;" data-i18n="uploadHint">您可以選取多個附件進行上報，檔案將自動存入雲端案件資料夾</small>
                     </div>
                 </div>
+                <!-- 蜜罐欄位：對真人隱藏，機器人自動填寫時後端會拒絕該筆提交 -->
+                <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;" aria-hidden="true">
+                    <label for="contactRef">Contact Ref</label>
+                    <input type="text" id="contactRef" name="contactRef" tabindex="-1" autocomplete="off">
+                </div>
                 <!-- 提交按鈕 -->
                 <button type="submit" id="submitBtn" class="primary-btn" data-i18n="btnSubmit">提交需求</button>
             </form>
@@ -136,7 +141,7 @@
         </div>
         <!-- 聊天輸入區域 -->
         <div id="chat-footer">
-            <input type="text" id="chat-input" data-i18n-placeholder="chatPlaceholder">
+            <input type="text" id="chat-input" maxlength="1000" data-i18n-placeholder="chatPlaceholder">
             <button id="send-chat" data-i18n="chatSend">傳送</button>
         </div>
     </div>

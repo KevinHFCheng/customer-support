@@ -1,15 +1,31 @@
 /**
  * 客戶需求與問題登記系統 - 主要邏輯腳本 (script.js)
- * 版本號: v2.8.0
- * 更新日期: 2026-07-07
+ * 版本號: v2.9.0
+ * 更新日期: 2026-10-28 09:57
  * 功能說明: 前端表單提交、圖片轉碼、AI 智能客服對話介面。
  * 變更紀錄:
  *   1. 新增語系欄位傳遞、對話歷史儲存（最近 3 次對話）以支援上下文記憶。
  *   2. 新增唯一 Session ID 生成與傳遞以支援對話日誌關聯優化。
  *   3. i18n 新增 specApproxNotice 三語系文案，對應波長查詢無精確符合結果時的提示。
+ *   4. 附件選取時預先檢查類型與大小（單檔 5 MB、合計 10 MB），規則與 GAS v2.15.0 後端一致。
+ *   5. 表單送出蜜罐欄位 contactRef；依後端錯誤代碼顯示每小時上限與格式錯誤提示。
+ *   6. AI 客服收到錯誤代碼時顯示對應提示，且不寫入對話歷史。
  */
 
 const GAS_WEB_APP_URL = "THE_GAS_URL_PLACEHOLDER";
+
+// 附件限制，需與 gas_backend.js 保持一致
+const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const MAX_TOTAL_FILE_BYTES = 10 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = [
+    /^image\/(png|jpe?g|gif|webp|bmp|heic|heif)$/,
+    /^application\/pdf$/,
+    /^text\/(plain|csv)$/,
+    /^application\/(msword|vnd\.ms-excel|vnd\.ms-powerpoint)$/,
+    /^application\/vnd\.openxmlformats-officedocument\./,
+    /^application\/(zip|x-zip-compressed)$/
+];
+const BLOCKED_FILE_EXTENSIONS = /\.(exe|bat|cmd|com|scr|msi|js|vbs|ps1|sh|jar|html?|svg)$/i;
 
 const i18n = {
     'zh-TW': {
@@ -81,7 +97,13 @@ const i18n = {
         errModelFormat: '型號格式錯誤，需至少 6 碼（例：SE2030）',
         errSystem: '系統錯誤：',
         errNoSensor: '找不到對應感測器資訊',
-        btnSearching: '查詢中...'
+        btnSearching: '查詢中...',
+        alertFileType: '不支援的檔案類型，請上傳圖片、PDF、Office 文件、文字檔或 ZIP 壓縮檔。',
+        alertFileTooLarge: '單一附件不可超過 5 MB，所有附件合計不可超過 10 MB。',
+        alertInvalidInput: '資料格式不正確，請確認必填欄位與附件後再提交。',
+        alertFormRateLimit: '表單已達到每小時提交上限，請稍後再提交。',
+        chatRateLimit: '已經達到每小時使用上限，請稍後再使用。',
+        chatInvalid: '問題內容過長或格式不正確，請精簡後再送出。'
     },
     'zh-CN': {
         pageTitle: '客户需求与问题登记',
@@ -152,7 +174,13 @@ const i18n = {
         errModelFormat: '型号格式错误，需至少 6 码（例：SE2030）',
         errSystem: '系统错误：',
         errNoSensor: '找不到对应感测器信息',
-        btnSearching: '查询中...'
+        btnSearching: '查询中...',
+        alertFileType: '不支持的文件类型，请上传图片、PDF、Office 文档、文本文件或 ZIP 压缩文件。',
+        alertFileTooLarge: '单个附件不可超过 5 MB，所有附件合计不可超过 10 MB。',
+        alertInvalidInput: '数据格式不正确，请确认必填字段与附件后再提交。',
+        alertFormRateLimit: '表单已达到每小时提交上限，请稍后再提交。',
+        chatRateLimit: '已经达到每小时使用上限，请稍后再使用。',
+        chatInvalid: '问题内容过长或格式不正确，请精简后再发送。'
     },
     'en': {
         pageTitle: 'Customer Support System',
@@ -223,7 +251,13 @@ const i18n = {
         errModelFormat: 'Invalid model format, at least 6 characters required (e.g. SE2030)',
         errSystem: 'System Error: ',
         errNoSensor: 'Sensor information not found',
-        btnSearching: 'Searching...'
+        btnSearching: 'Searching...',
+        alertFileType: 'Unsupported file type. Please upload images, PDF, Office documents, text files or ZIP archives.',
+        alertFileTooLarge: 'Each attachment must be 5 MB or smaller, and 10 MB or smaller in total.',
+        alertInvalidInput: 'Invalid data. Please check the required fields and attachments.',
+        alertFormRateLimit: 'The hourly submission limit has been reached. Please try again later.',
+        chatRateLimit: 'The hourly usage limit has been reached. Please try again later.',
+        chatInvalid: 'Your question is too long or invalid. Please shorten it and try again.'
     }
 };
 
@@ -301,10 +335,21 @@ if (imageFilesInput) {
             e.target.value = '';
             return;
         }
+        if (files.some(file => BLOCKED_FILE_EXTENSIONS.test(file.name) || !ALLOWED_FILE_TYPES.some(p => p.test(file.type)))) {
+            showAlert(i18n[currentLang].alertFileType);
+            e.target.value = '';
+            return;
+        }
+        const totalBytes = [...selectedFiles, ...files].reduce((sum, f) => sum + f.size, 0);
+        if (files.some(file => file.size > MAX_FILE_BYTES) || totalBytes > MAX_TOTAL_FILE_BYTES) {
+            showAlert(i18n[currentLang].alertFileTooLarge);
+            e.target.value = '';
+            return;
+        }
         for (const file of files) {
             const fileObj = await new Promise((resolve) => {
                 const reader = new FileReader();
-                reader.onload = (ev) => resolve({ name: file.name, data: ev.target.result });
+                reader.onload = (ev) => resolve({ name: file.name, size: file.size, data: ev.target.result });
                 reader.readAsDataURL(file);
             });
             selectedFiles.push(fileObj);
@@ -346,7 +391,8 @@ if (regForm) {
             reqType: document.getElementById('reqType').value,
             description: document.getElementById('description').value,
             files: selectedFiles,
-            lang: currentLang
+            lang: currentLang,
+            contactRef: document.getElementById('contactRef').value
         };
         try {
             const response = await fetch(GAS_WEB_APP_URL, { method: 'POST', body: JSON.stringify(formData) });
@@ -357,7 +403,10 @@ if (regForm) {
                 regForm.reset();
                 selectedFiles = [];
                 renderPreviews();
-            } else { showAlert(i18n[currentLang].alertError); }
+            } else {
+                const formErrorKeys = { FORM_RATE_LIMIT: 'alertFormRateLimit', INVALID_INPUT: 'alertInvalidInput' };
+                showAlert(i18n[currentLang][formErrorKeys[result.code]] || i18n[currentLang].alertError);
+            }
         } catch (error) {
             loading.classList.add('hidden');
             showAlert(i18n[currentLang].alertError);
@@ -395,8 +444,14 @@ const handleChatSubmit = async () => {
         const historyParam = encodeURIComponent(JSON.stringify(chatHistory));
         const response = await fetch(`${GAS_WEB_APP_URL}?q=${encodeURIComponent(query)}&lang=${currentLang}&history=${historyParam}&sessionId=${sessionId}`);
         const result = await response.json();
+        // 後端回傳錯誤代碼（每小時上限、格式錯誤、服務中斷）時只顯示提示，不寫入對話歷史
+        if (result.code) {
+            const chatErrorKeys = { CHAT_RATE_LIMIT: 'chatRateLimit', INVALID_INPUT: 'chatInvalid', SERVER_ERROR: 'chatError' };
+            addMessage(i18n[currentLang][chatErrorKeys[result.code]] || result.answer, 'bot');
+            return;
+        }
         addMessage(result.answer, 'bot');
-        
+
         // 更新歷史紀錄，僅保留最近 3 次對話（3 個 user + 3 個 model/bot，共 6 筆）
         chatHistory.push({ role: 'user', text: query });
         chatHistory.push({ role: 'model', text: result.answer });
